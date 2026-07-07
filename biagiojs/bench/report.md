@@ -1,5 +1,7 @@
 # Benchmark — biagiojs vs baseline naive
 
+> File generato da `npm run bench` in `biagiojs/`. Non editare a mano.
+
 | Metrica | biagiojs | Naive |
 |---|---|---|
 | Isole idratate (eager+lazy) | **1+0** | 9+0 |

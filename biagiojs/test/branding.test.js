@@ -28,7 +28,7 @@ test('package.json: nome npm, bin CLI, versione e lockfile', () => {
   assert.equal(pkg.name, 'biagiojs');
   assert.equal(pkg.bin.biagio, 'src/cli.js');
   assert.equal(pkg.bin['create-biagiojs'], 'src/create-biagiojs.js');
-  assert.equal(pkg.version, '0.8.3');
+  assert.equal(pkg.version, '0.9.0');
   const lock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
   assert.equal(lock.version, pkg.version, 'package-lock.json version deve coincidere con package.json');
   assert.equal(lock.packages[''].name, 'biagiojs', 'package-lock root name deve essere biagiojs');
@@ -74,18 +74,27 @@ test('font subset: scan include testo da pages/*.page.biagio', () => {
 
 test('create-biagiojs scaffold standalone: dipende da biagiojs', () => {
   const scaffold = read('../create-biagiojs/index.js');
-  assert.match(scaffold, /'biagiojs': '\^0\.8\.3'/);
+  assert.match(scaffold, /'biagiojs': '\^0\.9\.0'/);
   assert.match(scaffold, /biagio\.config\.js/);
   assert.match(scaffold, /index\.page\.biagio/);
   assert.doesNotMatch(scaffold, /cvw-first|cvw\.config/);
 });
 
-test('docs utente: README e AI-GUIDE usano biagiojs, non cvw-first', () => {
-  for (const f of ['README.md', 'AI-GUIDE.md', 'CHANGELOG.md']) {
+test('docs utente: AI-GUIDE e CHANGELOG senza CLI obsoleta', () => {
+  for (const f of ['AI-GUIDE.md', 'CHANGELOG.md']) {
     const doc = read(f);
     assert.match(doc, /biagiojs/, `${f} deve menzionare biagiojs`);
-    assert.doesNotMatch(doc, /cvw-first|CVW-First|npx cvw\b|cvw\.config/, `${f} non deve contenere nomi obsoleti`);
+    assert.doesNotMatch(doc, /npx cvw\b/, `${f} non deve usare npx cvw`);
   }
+});
+
+test('README: sezione migrazione e link documentazione', () => {
+  const readme = read('README.md');
+  assert.match(readme, /## Migrazione da cvw-first/);
+  assert.match(readme, /IMAGE-OPTIMIZATION\.md/);
+  assert.match(readme, /DEPLOY-CACHE\.md/);
+  assert.match(readme, /AI-GUIDE\.md/);
+  assert.match(readme, /CHANGELOG\.md/);
 });
 
 test('src/: nessun prefisso errore [cvw] residuo', () => {

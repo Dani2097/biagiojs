@@ -1,6 +1,6 @@
 # Image Optimization — biagiojs
 
-Guida alla pipeline immagini: build con **sharp**, markup responsive con **`smartImage()`**, e scelta delle dimensioni **per componente** senza rompere la validazione post-build.
+> Guida alla pipeline immagini. Panoramica framework: [README](./README.md) · Cache deploy: [DEPLOY-CACHE.md](./DEPLOY-CACHE.md).
 
 ## Panoramica
 

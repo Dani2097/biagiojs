@@ -1,12 +1,19 @@
 {
   "name": "create-biagiojs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scaffolding per siti biagiojs: npx create-biagiojs mio-sito",
   "type": "module",
   "bin": { "create-biagiojs": "./index.js" },
-  "files": ["index.js", "templates"],
+  "files": ["index.js", "README.md"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dani2097/biagiojs.git",
+    "directory": "create-biagiojs"
+  },
+  "homepage": "https://github.com/Dani2097/biagiojs/tree/main/create-biagiojs",
   "author": "Danilo Sprovieri <danilo.sprovieri9@gmail.com>",
   "engines": { "node": ">=18" },
   "keywords": ["biagiojs", "create", "scaffold", "framework"],
-  "license": "MIT"
+  "license": "MIT",
+
 }

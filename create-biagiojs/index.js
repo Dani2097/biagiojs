@@ -31,7 +31,7 @@ writeFileSync(join(root, 'package.json'), JSON.stringify({
     preview: 'node node_modules/biagiojs/src/adapters/node.js . 3000',
     'pull-vitals': 'biagio pull-vitals',
   },
-  dependencies: { 'biagiojs': '^0.8.3' },
+  dependencies: { 'biagiojs': '^0.9.0' },
   devDependencies: { vite: '^6.0.0', sharp: '^0.33.0' },
 }, null, 2) + '\n');
 
