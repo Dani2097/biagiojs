@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>biagiojs Demo — UltraLight Running Shoe</title>
+<style>
+  body{margin:0;font-family:system-ui,sans-serif;color:#1a1a2e;background:#fafafa}
+  section{padding:24px;max-width:920px;margin:0 auto;width:100%;box-sizing:border-box}
+  .hero{background:linear-gradient(120deg,#1a1a2e,#16213e);color:#fff;text-align:center;padding:64px 24px}
+  .cta{display:inline-block;background:#e94560;color:#fff;border:none;padding:14px 36px;font-size:18px;border-radius:8px;cursor:pointer}
+  .price{font-size:32px;font-weight:700;color:#e94560}
+  nav{background:#fff;border-bottom:1px solid #eee;padding:12px 24px;display:flex;gap:20px}
+  footer{background:#1a1a2e;color:#aaa;padding:32px 24px;text-align:center}
+  .review{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;margin:8px 0}
+  .carousel{display:flex;gap:12px;overflow-x:auto}
+  .card{min-width:180px;background:#fff;border:1px solid #eee;border-radius:8px;padding:12px}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"UltraLight Running Shoe","offers":{"@type":"Offer","price":"129.00","priceCurrency":"EUR"}}</script>
+<script>window.__CVW_PLAN__={"eager":[{"id":"cta","priority":0.618}],"lazy":[{"id":"nav","priority":0.102}],"static":[{"id":"hero","priority":0.164},{"id":"reviews","priority":0.164},{"id":"price","priority":0.076},{"id":"carousel","priority":0.021},{"id":"footer","priority":0.001},{"id":"chat","priority":0.001}]};</script>
+</head>
+<body>
+<main style="display:flex;flex-direction:column">
+<div data-cvw-id="price" data-cvw-conversion="high" data-cvw-seo="high" style="order:2"><section><span class="price">€129,00</span> <s style="color:#999">€169,00</s> — spedizione gratuita</section></div>
+<div data-cvw-id="cta" data-cvw-conversion="high" data-cvw-revenue="true" style="order:3"><section style="text-align:center"><button class="cta" id="buy">Aggiungi al carrello</button><p id="cta-status" style="color:#888">in attesa di idratazione…</p></section></div>
+<div data-cvw-id="hero" data-cvw-conversion="high" data-cvw-seo="high" style="order:1"><div class="hero"><h1>UltraLight Running Shoe</h1><p>Il prodotto che converte. Renderizzato per primo, perché conta di più.</p></div></div>
+<div data-cvw-id="nav" style="order:0"><nav><b>ShoeShop</b><a href="#">Uomo</a><a href="#">Donna</a><a href="#">Offerte</a></nav></div>
+<div data-cvw-id="reviews" data-cvw-seo="high" style="order:4"><section><h2>Recensioni</h2><div class="review">★★★★★ "Leggerissime." — Marco</div><div class="review">★★★★☆ "Ottimo acquisto." — Giulia</div></section></div>
+<div data-cvw-id="footer" style="order:7"><footer>© 2026 ShoeShop — generato da biagiojs PoC</footer></div>
+<div data-cvw-id="carousel" style="order:5"><section><h2>Potrebbero piacerti</h2><div class="carousel"><div class="card">Trail X<br><small>€99</small></div><div class="card">Road 2<br><small>€99</small></div><div class="card">Gym Flex<br><small>€99</small></div><div class="card">Walk+<br><small>€99</small></div></div></section></div>
+<div data-cvw-id="chat" style="order:6"><section style="text-align:right;color:#bbb"><small>💬 chat widget — statico: JS mai spedito (priorità sotto soglia)</small></section></div>
+</main>
+<script>window.__CVW_ISLANDS__={
+  "cta": (el) => {
+    const btn = el.querySelector('#buy'), st = el.querySelector('#cta-status');
+    st.textContent = 'pronto ✓ (idratato eager)';
+    st.style.color = '#2a9d5c';
+    let n = 0;
+    btn.addEventListener('click', () => { n++; btn.textContent = 'Nel carrello (' + n + ')'; });
+  },
+  "nav": (el) => { el.querySelectorAll('a').forEach(a => a.addEventListener('click', e => e.preventDefault())); },
+  "carousel": (el) => { el.querySelector('.carousel').style.scrollBehavior = 'smooth'; },
+  "chat": () => { /* heavy widget: never hydrated because priority < lazyThreshold */ }
+};</script>
+<script>
+(function () {
+  const t0 = performance.timeOrigin ? 0 : 0; // times relative to navigation start
+  const M = window.__CVW_METRICS__ = { CFP: null, FAR: null, RFI: null, SCRT: null, CDI: null };
+  const now = () => Math.round(performance.now());
+
+  // CFP + SCRT via element visibility
+  const conv = [...document.querySelectorAll('[data-cvw-conversion="high"]')];
+  const seo  = [...document.querySelectorAll('[data-cvw-seo="high"]')];
+  let seoSeen = 0, firstPaintTs = null;
+
+  const io = new IntersectionObserver(entries => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      if (M.CFP === null && e.target.dataset.cvwConversion === 'high') M.CFP = now();
+      if (e.target.dataset.cvwSeo === 'high' && !e.target.__cvwSeen) {
+        e.target.__cvwSeen = true; seoSeen++;
+        if (seoSeen === seo.length) M.SCRT = now();
+      }
+      report();
+    }
+  }, { threshold: 0.1 });
+  conv.concat(seo).forEach(el => io.observe(el));
+
+  // first paint timestamp for CDI
+  new PerformanceObserver(list => {
+    for (const e of list.getEntries()) if (e.name === 'first-contentful-paint') firstPaintTs = e.startTime;
+  }).observe({ type: 'paint', buffered: true });
+
+  // FAR / RFI signalled by the hydration runtime
+  const revenueIslands = new Set([...document.querySelectorAll('[data-cvw-revenue="true"]')].map(e => e.dataset.cvwId));
+  const hydrated = new Set();
+  window.__cvwHydrated = function (id, isRevenue) {
+    hydrated.add(id);
+    if (M.FAR === null && isRevenue) M.FAR = now();
+    if (M.RFI === null && [...revenueIslands].every(r => hydrated.has(r))) {
+      M.RFI = now();
+      if (firstPaintTs !== null) M.CDI = Math.round(M.RFI - firstPaintTs);
+    }
+    report();
+  };
+
+  function report() {
+    document.dispatchEvent(new CustomEvent('cvw:metrics', { detail: { ...M } }));
+  }
+  report();
+})();
+</script>
+<script>
+(function () {
+  const registry = window.__CVW_ISLANDS__ || {};   // id -> hydrate fn source
+  const plan = window.__CVW_PLAN__ || { eager: [], lazy: [] };
+
+  function hydrate(id) {
+    const el = document.querySelector('[data-cvw-id="' + id + '"]');
+    const fn = registry[id];
+    if (!el || !fn || el.__cvwDone) return;
+    el.__cvwDone = true;
+    try { fn(el); } catch (e) { console.error('[biagio] hydrate ' + id, e); }
+    el.setAttribute('data-cvw-hydrated', '');
+    if (window.__cvwHydrated) window.__cvwHydrated(id, el.dataset.cvwRevenue === 'true');
+  }
+
+  // Eager: after first paint, in priority order, yielding between islands (INP-friendly)
+  requestAnimationFrame(() => {
+    const queue = [...plan.eager];
+    (function next() {
+      if (!queue.length) return;
+      hydrate(queue.shift().id);
+      setTimeout(next, 0); // yield to main thread between hydrations
+    })();
+  });
+
+  // Lazy: visibility OR idle
+  const io = new IntersectionObserver(entries => {
+    for (const e of entries) if (e.isIntersecting) { hydrate(e.target.dataset.cvwId); io.unobserve(e.target); }
+  }, { rootMargin: '200px' });
+  for (const { id } of plan.lazy) {
+    const el = document.querySelector('[data-cvw-id="' + id + '"]');
+    if (el) io.observe(el);
+  }
+  (window.requestIdleCallback || (cb => setTimeout(cb, 2000)))(() => {
+    for (const { id } of plan.lazy) hydrate(id);
+  });
+})();
+</script>
+<script>
+(function(){
+  const box = document.createElement('div');
+  box.style.cssText='position:fixed;bottom:12px;right:12px;background:#111c;backdrop-filter:blur(6px);color:#7CFC98;font:12px/1.6 ui-monospace,monospace;padding:10px 14px;border-radius:10px;z-index:9999;min-width:220px';
+  document.body.appendChild(box);
+  const fmt = v => v===null ? '—' : v+' ms';
+  function draw(m){
+    const plan = window.__CVW_PLAN__||{};
+    box.innerHTML = '<b style="color:#fff">biagiojs metrics</b><br>'
+      + 'CFP&nbsp; (Conversion First Paint): '+fmt(m.CFP)+'<br>'
+      + 'FAR&nbsp; (First Action Ready): '+fmt(m.FAR)+'<br>'
+      + 'RFI&nbsp; (Revenue First Interactive): '+fmt(m.RFI)+'<br>'
+      + 'SCRT (SEO Critical Render): '+fmt(m.SCRT)+'<br>'
+      + 'CDI&nbsp; (Conversion Delay Index): '+fmt(m.CDI)+'<br>'
+      + '<span style="color:#aaa">islands: '+(plan.eager||[]).length+' eager / '+(plan.lazy||[]).length+' lazy / '+(plan.static||[]).length+' static</span>';
+  }
+  document.addEventListener('cvw:metrics', e => draw(e.detail));
+  draw(window.__CVW_METRICS__||{CFP:null,FAR:null,RFI:null,SCRT:null,CDI:null});
+})();
+</script>
+</body>
+</html>

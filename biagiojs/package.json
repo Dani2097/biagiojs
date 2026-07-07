@@ -1,0 +1,77 @@
+{
+  "name": "biagiojs",
+  "version": "0.8.3",
+  "description": "Business-first web framework: Core Web Vitals as constraints, conversion/SEO/engagement as first-class citizens. SSR + adaptive islands + file-based routing.",
+  "type": "module",
+  "bin": {
+    "biagio": "src/cli.js",
+    "create-biagiojs": "src/create-biagiojs.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "AI-GUIDE.md",
+    "IMAGE-OPTIMIZATION.md",
+    "DEPLOY-CACHE.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "author": "Danilo Sprovieri <danilo.sprovieri9@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dani2097/biagiojs.git",
+    "directory": "biagiojs"
+  },
+  "homepage": "https://github.com/Dani2097/biagiojs#readme",
+  "bugs": { "url": "https://github.com/Dani2097/biagiojs/issues" },
+  "exports": {
+    ".": "./src/ssr.js",
+    "./graph": "./src/core/graph.js",
+    "./scheduler": "./src/core/scheduler.js",
+    "./html": "./src/core/html.js",
+    "./seo": "./src/core/seo.js",
+    "./images": "./src/core/images.js",
+    "./fonts": "./src/core/fonts.js",
+    "./font-subset": "./src/core/font-subset.js",
+    "./remote-images": "./src/core/remote-images.js",
+    "./env": "./src/core/env.js",
+    "./config": "./src/core/config.js",
+    "./content": "./src/core/content.js",
+    "./experiments": "./src/core/experiments.js",
+    "./optimizer": "./src/core/optimizer.js",
+    "./vite": "./src/vite/plugin.js",
+    "./adapters/node": "./src/adapters/node.js",
+    "./adapters/vercel": "./src/adapters/vercel.js",
+    "./consent": "./src/core/consent.js",
+    "./server-render": "./src/server-render.js"
+  },
+  "scripts": {
+    "build": "node src/cli.js build demo",
+    "dev": "node src/cli.js dev demo",
+    "test": "node --test test/*.test.js",
+    "bench": "node bench/benchmark.js"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.33.0",
+    "subset-font": "^2.3.0",
+    "lightningcss": "^1.27.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "sharp": "^0.33.0",
+    "subset-font": "^2.3.0",
+    "lightningcss": "^1.27.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "framework",
+    "ssr",
+    "islands",
+    "core-web-vitals",
+    "conversion",
+    "seo"
+  ],
+  "license": "MIT"
+}

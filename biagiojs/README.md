@@ -1,5 +1,3 @@
-> Monorepo: [`biagiojs/`](./biagiojs) (il framework [npm](https://www.npmjs.com/package/biagiojs)) · [`create-biagiojs/`](./create-biagiojs) (pacchetto scaffolding `npx create-biagiojs`). Questo README è la copia di `biagiojs/README.md`.
-
 # biagiojs
 
 **Il framework web business-first.** Core Web Vitals come vincoli, conversione/SEO/engagement come cittadini di prima classe. SSR + adaptive islands + file-based routing, zero dipendenze obbligatorie.
@@ -143,7 +141,7 @@ mio-sito/
 
 ```bash
 npx biagio dev .                    # dev server: Vite se installato (HMR, TS), fallback integrato
-npx biagio build .                  # → dist/ statico + sitemap.xml + robots.txt (+ immagini)
+npx biagio build .                  # → dist/ (+ --clean, --dryRun)
 npm run preview                  # adapter Node: statico + SSR on-demand (prod)
 npx biagio pull-vitals <url> .      # CrUX/Lighthouse reali → reports/crux.json
 npx create-biagiojs <dir>             # scaffolding nuovo sito
@@ -152,7 +150,7 @@ npx create-biagiojs <dir>             # scaffolding nuovo sito
 ## Cosa fa in automatico
 
 - **SEO (§8)**: meta, canonical, Open Graph, Twitter card, JSON-LD (`Product` con rating, `BreadcrumbList`), breadcrumb visibile, `sitemap.xml`, `robots.txt`, **favicon**. Tutto da `biagio.config.js` + attributi `<page>`. Favicon: metti i file in `public/` e dichiara `site.favicon = '/favicon.svg'` oppure `{ svg, ico, apple, themeColor }` → i tag nel head escono da soli. Open Graph per pagina: `page.image` (stringa o `{ src, width, height, alt }` per og:image:width/height/alt) con **fallback di sito** `site.ogImage` per le pagine senza immagine; twitter:card/title/description/image inclusi.
-- **Immagini (§9)**: `smartImage()` genera `<picture>` AVIF/WebP/JPEG responsive; `eager`/`fetchpriority`/`decoding` derivati dal priority score; varianti generate a build (e in dev all'avvio) con sharp. Nomi con spazi normalizzati in slug.
+- **Immagini (§9)**: `smartImage()` genera `<picture>` AVIF/WebP/JPEG responsive; profili (`content`, `hero`, `thumb`, `full`) e `bySlug` per larghezze per componente; `eager`/`fetchpriority`/`decoding` derivati dal priority score; varianti generate a build (e in dev all'avvio) con sharp. Vedi **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)**.
 - **Rete (§10)**: `<link rel=preload/prefetch>` ordinati per businessValue/KB, con budget preload (default 200 KB) per non intasare il critical path.
 - **Esperimenti (§11)**: `ab.define('exp', ['a','b'])` + `ab.pick(...)` — variante scelta server-side con hash deterministico per utente: zero flicker, zero CLS.
 - **Optimizer (§7)**: a ogni build legge `reports/` e corregge i pesi dichiarati con i dati reali — `analytics.json` (CTR per componente → interactionProbability), `crux.json` (LCP/INP p75 → soglie di idratazione: dispositivi lenti ⇒ meno JS), `heatmap.json` (attenzione → conversionWeight ±0.2), `searchconsole.json` (→ seoWeight). Log decisionale nel build output.
@@ -242,10 +240,10 @@ Scelta deliberata: niente redirect automatico dalla lingua del browser (danneggi
 ## Deploy
 
 - **Statico** (sito vetrina, blog): `dist/` su Vercel, **Cloudflare Pages**, Netlify, qualsiasi CDN.
-  - **Cloudflare Pages (SSG)**: build command `npm run build`, output `dist`, Node ≥ 18. Nessun Worker per siti 100% statici.
-- **SSR on-demand** (e-commerce, personalizzazione): adapter Node (`biagiojs/adapters/node`) su VPS, oppure **adapter Vercel** (`biagiojs/adapters/vercel`). Adapter Cloudflare Workers in roadmap 1.0.
+  - **Cloudflare Pages (SSG)**: build command `npm run build` (o `biagio build .`), output directory `dist`, Node ≥ 18. Nessun Worker necessario per siti 100% statici — carichi solo la cartella `dist/`. Il file `public/_headers` (generato da `create-biagiojs`) imposta la cache per `/img/`, `/islands/` e HTML.
+- **SSR on-demand** (e-commerce, personalizzazione): adapter Node (`biagiojs/adapters/node`) su VPS, oppure **adapter Vercel** (`biagiojs/adapters/vercel`): statico su CDN + function serverless solo per le pagine dinamiche. Adapter Cloudflare Workers in roadmap per la 1.0.
 
-Per il workflow completo e le regole operative (pesi, idratazione, consent, i18n): `AI-GUIDE.md` — scritta per gli agenti AI, ottima anche per umani.
+Per il workflow completo e le regole operative (pesi, idratazione, consent, i18n): `AI-GUIDE.md` — scritta per gli agenti AI, ottima anche per umani. Per immagini responsive, profili e `bySlug`: **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)**. Per cache Cloudflare/Netlify: **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)**. Storico versioni: **[CHANGELOG.md](./CHANGELOG.md)**.
 
 ## Il feedback loop (la differenza vera)
 
@@ -274,3 +272,55 @@ Nessun altro framework chiude questo cerchio: biagiojs adatta idratazione e prio
 | Navigazione | 0.2 | 0.3 | 0.3–0.5 |
 | Carousel correlati | 0.1–0.3 | 0–0.2 | 0.1–0.2 |
 | Chat/cookie/widget terzi | ≤0.05 | 0 | ≤0.05 |
+| Footer | ≤0.05 | 0.1 | ≤0.05 |
+
+**Vincoli del sistema**: `businessValue = 0.6·conversion + 0.25·seo + 0.15·interaction` (calcolato, non impostarlo). Priorità idratazione = `interaction × businessValue`; soglie default eager ≥0.3, lazy ≥0.05 (l'optimizer le alza su field data lenti). `conversion ≥ 0.7` + idratazione ⇒ revenue island (conta per FAR/RFI): marca così solo interazioni che generano ricavo.
+
+**Errori tipici da evitare**:
+0. Isole critiche come file esterni — se un'interazione deve partire subito (tema, lingua, nav), usa `hydrate="inline"`: entra nell'HTML come data-URI, non nella catena LCP.
+1. Idratare tutto — se un componente non ha interazioni reali, niente `script hydrate`/`client`: statico è il default desiderabile.
+2. Pesare tutto alto — se tutto è critico, lo scheduler degenera nell'ordine DOM.
+3. `render()` che ritorna elementi DOM — deve ritornare una *stringa*.
+4. Closure su variabili di build dentro `hydrate` di `.page.js` — la funzione è serializzata con `.toString()`: deve essere self-contained (usa `clientModule`+`clientProps` per passare dati).
+5. Dimenticare `domOrder` nei `.page.js` (nei `.biagio` è automatico: ordine del file).
+6. Interpolare input non fidato senza `html\`\`` — XSS.
+7. `raw()` su contenuto utente — solo su output del framework (es. `post.html`).
+
+**Verifica sempre**: `npx biagio build .` senza errori; nel log le pagine ad alto valore hanno i nodi giusti in cima al render order; `npm test` se modifichi il framework stesso.
+
+---
+
+## Stato del progetto — verso la 1.0
+
+**v0.6.0** — **modulo consent GDPR** (native 0 KB critical path + vendor Cookiebot/Iubenda ottimizzati, gating `consent=` su isole e script, Consent Mode v2). **v0.5.x** — favicon e OG per pagina con fallback. **v0.5.0** — implementa integralmente il paper (§3–§12) più: sicurezza XSS, signals, Vite (HMR), SSG + **ISR** (`revalidate`) + SSR on-demand (adapter Node **e Vercel**), isole React, **isole inline via data-URI** e override `hydrate=`, **zero JS sulle pagine statiche**, `modulepreload` automatico, **minify + PurgeCSS integrati**, `public/`, route dinamiche, content collections, sintassi `.biagio`, TypeScript nei template, i18n completo (hreflang, sitemap alternate, report per mercato), CWV live in dev, error overlay, pipeline immagini, 27 test, benchmark.
+
+Restano per la 1.0: adapter Cloudflare Workers (SSG → Pages già supportato), HMR granulare delle isole (oggi full-reload), benchmark Lighthouse pubblico contro Astro/Next, docs sito dedicato. I numeri attesi del paper (§13: −25% LCP, +5–15% conversione) sono **ipotesi da validare sul campo** — il framework fornisce gli strumenti per misurarle (`pull-vitals`, esperimenti nativi).
+
+### v0.8.1 — patch
+
+Allineamento versione pacchetti. Vedi **[CHANGELOG.md](./CHANGELOG.md)**.
+
+### v0.8.0 — runtime dimagrito
+
+- **HTML più leggero**: attributi `data-cvw-*` solo su nodi interattivi; piano idratazione compatto `{e,l}`; bundle client in un IIFE; signals solo se usati; isole inline con URI ottimizzato.
+- Benchmark demo: HTML prodotto **−33%** (21 KB → 14 KB). Dettagli in **[CHANGELOG.md](./CHANGELOG.md)**.
+
+### v0.7.0 — production hardening
+
+- **PurgeCSS**: `<style>` in `<template>` e `data-cvw-no-purge` esclusi dal purge (fix widget JS/terze parti).
+- **Immagini**: sorgenti più piccole dei bucket generano comunque tutte le varianti (`withoutEnlargement`); build fallisce se `images/` non è vuota ma `sharp` manca; validazione post-build srcset vs `dist/img/`.
+- **`.env` in build**: `loadEnv` (compatibile Vite); alias `VITE_PUBLIC_*` → `PUBLIC_*`; helper `requireEnv()` da `biagiojs/env`.
+- **`site.images` in config**: `widths`, `bySlug`, `profiles`, `quality`, `allowSmallerSources`; profili per componente (`profile: 'hero'` in `smartImage()`); guida completa in **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)**.
+- **`biagio dev`**: merge automatico di `vite.config.js` del progetto.
+- **`hooks.beforeImages`** / **`hooks.afterImages`** in `biagio.config.js` per pipeline custom.
+- **`site.images.remote`**: download pre-build da URL esterni con allowlist domini → `images/` → pipeline sharp.
+- **`site.fonts`**: `inject: 'inline'|'async'|'stylesheet'|false`, `preload: 'critical'|'all'|false`, `preloadCritical`, `role` su voci `google` (`body`/`display`), `afterFonts` hook; manifest aggiornato post-subset.
+- **`site.cache`**: genera `dist/_headers` con `! Cache-Control` — vedi **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)**.
+- **`hooks.head({ page, locale })`**: HTML extra nel `<head>` per pagina.
+- **`site.sitemap`**: path custom per `robots.txt` (default `sitemap.xml`).
+- **`site.fonts.subset`**: opt-in post-render (`latin` + scan HTML); richiede `subset-font` se abilitato.
+- **`create-biagiojs`**: `sharp` in devDependencies, template `public/_headers` per Cloudflare/Netlify.
+
+## Licenza
+
+MIT © Danilo Sprovieri
