@@ -1,0 +1,12 @@
+{
+  "name": "create-cvw",
+  "version": "0.1.0",
+  "description": "Scaffolding per siti CVW-First: npx create-cvw mio-sito",
+  "type": "module",
+  "bin": { "create-cvw": "./index.js" },
+  "files": ["index.js", "templates"],
+  "author": "Danilo Sprovieri <danilo.sprovieri9@gmail.com>",
+  "engines": { "node": ">=18" },
+  "keywords": ["cvw-first", "create", "scaffold", "framework"],
+  "license": "MIT"
+}

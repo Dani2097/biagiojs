@@ -1,0 +1,56 @@
+<page title="Chi siamo — VELOCE"
+      description="La storia di VELOCE: scarpe da running progettate a Milano dal 2019."
+      sitemapPriority="0.7" lastmod="2026-07-06" />
+
+<component id="nav" seo="0.3" conversion="0.2" interaction="0.3">
+  <template>
+    <nav class="main"><span class="logo">VELO<span>CE</span></span><a href="/">AeroFoam X-1</a><a href="/collection/">Collezione</a><a href="/chi-siamo/">Chi siamo</a></nav>
+  </template>
+</component>
+
+<component id="story" seo="1" conversion="0.5" cpu="2">
+  <template>
+    <section style="max-width:720px">
+      <div style="color:var(--accent);font-weight:700;letter-spacing:.2em;font-size:12px;text-transform:uppercase">Dal 2019</div>
+      <h1 style="font-size:clamp(30px,4.5vw,48px)">Corriamo anche noi.</h1>
+      <p style="line-height:1.7;color:#3a3a48">VELOCE nasce a Milano da tre maratoneti stanchi di scegliere tra leggerezza e durata. Ogni modello viene testato per 1.000 km dai nostri atleti prima di arrivare in negozio.</p>
+      <p style="line-height:1.7;color:#3a3a48">Questa pagina è scritta in <b>sintassi .cvw</b>: pesi business dichiarati come attributi, zero JavaScript da scrivere per le parti statiche.</p>
+    </section>
+  </template>
+</component>
+
+<component id="team-cta" conversion="0.9" interaction="0.5">
+  <template>
+    <section style="text-align:center">
+      <button class="cta" id="join">Lavora con noi</button>
+      <p id="join-status" style="color:var(--muted);font-size:13px;margin-top:10px"></p>
+    </section>
+  </template>
+  <script hydrate>
+    const btn = el.querySelector('#join');
+    const st = el.querySelector('#join-status');
+    st.textContent = 'isola idratata da sintassi .cvw ✓';
+    btn.addEventListener('click', () => { btn.textContent = 'Candidatura inviata ✓'; btn.disabled = true; });
+  </script>
+</component>
+
+<component id="footer" conversion="0.05">
+  <template>
+    <footer><div class="logo">VELO<span>CE</span></div><small>Pagina compilata da .cvw — CVW-First.</small></footer>
+  </template>
+</component>
+
+<style>
+  :root{--ink:#14141f;--paper:#faf8f4;--accent:#ff4d5a;--muted:#8a8a96;--line:#ececec}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+  section{padding:56px 24px;max-width:1080px;margin:0 auto;width:100%}
+  nav.main{position:sticky;top:0;background:rgba(250,248,244,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;gap:28px;align-items:center}
+  nav.main .logo{font-weight:900;font-size:20px;letter-spacing:.08em}
+  nav.main .logo span{color:var(--accent)}
+  nav.main a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:600;opacity:.75}
+  .cta{background:linear-gradient(135deg,#ff4d5a,#e03442);color:#fff;border:none;padding:16px 40px;font-size:17px;font-weight:700;border-radius:999px;cursor:pointer}
+  footer{background:var(--ink);color:#9a9aa8;padding:48px 24px;text-align:center;margin-top:56px}
+  footer .logo{color:#fff;font-weight:900}
+  footer .logo span{color:var(--accent)}
+</style>
