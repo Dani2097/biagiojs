@@ -30,8 +30,9 @@ export function matchRoute(pagesDir, url) {
   const clean = url.replace(/\/+$/, '') || '/';
   const segs = clean === '/' ? [] : clean.slice(1).split('/');
   for (const file of walkPages(pagesDir)) {
-    const routeSegs = file.replace(/\.page\.(js|ts|biagio)$/, '').split('/');
-    if (routeSegs.length === 1 && routeSegs[0] === 'index' && segs.length === 0) return { file, params: {} };
+    let routeSegs = file.replace(/\.page\.(js|ts|biagio)$/, '').split('/');
+    // index di cartella: pages/index.page.js → /  ·  pages/docs/index.page.js → /docs/
+    if (routeSegs[routeSegs.length - 1] === 'index') routeSegs = routeSegs.slice(0, -1);
     if (routeSegs.length !== segs.length) continue;
     const params = {};
     let ok = true;

@@ -84,10 +84,19 @@ export function biagio({ projectDir = '.' } = {}) {
       server.watcher.add(join(root, 'images'));
       server.watcher.on('change', f => { if (f.includes('images')) runImages(); });
 
-      // servi /img/, /fonts/ e /islands/
-      server.middlewares.use((req, res, next) => {
+      // servi /img/, /fonts/ e /islands/ — isole via Vite per HMR granulare
+      server.middlewares.use(async (req, res, next) => {
         const url = decodeURIComponent((req.url || '').split('?')[0]);
         if (!url.startsWith('/img/') && !url.startsWith('/islands/') && !url.startsWith('/fonts/')) return next();
+        if (url.startsWith('/islands/')) {
+          try {
+            const result = await server.transformRequest(url);
+            if (result) {
+              res.setHeader('content-type', 'text/javascript');
+              return res.end(result.code);
+            }
+          } catch { /* fallback file statico */ }
+        }
         const path = url.startsWith('/islands/')
           ? join(root, url)
           : url.startsWith('/fonts/')
@@ -96,6 +105,13 @@ export function biagio({ projectDir = '.' } = {}) {
         if (!existsSync(path)) return next();
         res.setHeader('content-type', ASSET_TYPES[url.split('.').pop()] || 'application/octet-stream');
         res.end(readFileSync(path));
+      });
+
+      server.watcher.add(join(root, 'islands'));
+      server.watcher.on('change', file => {
+        if (!file.replace(/\\/g, '/').includes('/islands/')) return;
+        const mods = server.moduleGraph.getModulesByFile(file);
+        if (mods) for (const m of mods) server.moduleGraph.invalidateModule(m);
       });
 
       // full reload quando cambiano contenuti o report (non moduli JS)

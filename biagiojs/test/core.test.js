@@ -136,6 +136,40 @@ test('seoHead: canonical, OG, JSON-LD Product e breadcrumbs', () => {
   assert.match(h, /"@type":"BreadcrumbList"/);
 });
 
+test('seoHead: SoftwareApplication, WebSite, Organization, TechArticle', () => {
+  const site = {
+    name: 'biagiojs', baseUrl: 'https://s.com',
+    organization: { name: 'biagiojs', logo: '/logo.svg', sameAs: ['https://github.com/x'] },
+    website: { name: 'Docs' },
+    locales: ['en', 'it'],
+  };
+  const home = seoHead(site, {
+    path: '/', basePath: '/', title: 'Home', description: 'D', locale: 'en',
+    software: { name: 'biagiojs', version: '1.0.0', downloadUrl: 'https://npmjs.com/x' },
+  });
+  assert.match(home, /"@type":"SoftwareApplication"/);
+  assert.match(home, /"@type":"WebSite"/);
+  assert.match(home, /"@type":"Organization"/);
+  assert.match(home, /og:locale:alternate/);
+
+  const doc = seoHead(site, {
+    path: '/docs/start/', basePath: '/docs/start/', title: 'Start', description: 'D',
+    type: 'article', locale: 'en',
+    article: { datePublished: '2026-01-01', author: 'Dev', section: 'Guides' },
+  });
+  assert.match(doc, /"@type":"TechArticle"/);
+  assert.match(doc, /property="og:type" content="article"/);
+  assert.match(doc, /article:published_time/);
+});
+
+test('sitemap: hreflang x-default', () => {
+  const xml = sitemap(
+    { baseUrl: 'https://s.com', locales: ['en', 'it'], defaultLocale: 'en' },
+    [{ path: '/en/p/', basePath: '/p/' }],
+  );
+  assert.match(xml, /hreflang="x-default"/);
+});
+
 test('sitemap esclude noindex', () => {
   const xml = sitemap({ baseUrl: 'https://s.com' }, [{ path: '/a/' }, { path: '/b/', noindex: true }]);
   assert.match(xml, /\/a\//);
@@ -148,4 +182,11 @@ test('markdownToHtml: struttura + escaping del contenuto', () => {
   assert.match(out, /<h1>Titolo<\/h1>/);
   assert.match(out, /<li><strong>due<\/strong><\/li>/);
   assert.doesNotMatch(out, /<script>/);
+});
+
+test('markdownToHtml: blocchi codice e tabelle', () => {
+  const out = markdownToHtml('```js\nconst x = 1;\n```\n\n| A | B |\n|---|---|\n| 1 | 2 |');
+  assert.match(out, /<pre><code class="lang-js">const x = 1;<\/code><\/pre>/);
+  assert.match(out, /<table><thead>/);
+  assert.match(out, /<td>2<\/td>/);
 });

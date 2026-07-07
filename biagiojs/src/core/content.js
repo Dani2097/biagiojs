@@ -1,13 +1,5 @@
 /**
  * biagiojs — Content collections (Markdown + frontmatter), stile Astro.
- *
- *   import { getCollection } from '../../src/core/content.js';
- *   const posts = getCollection(join(root, 'content/blog'));
- *   // → [{ slug, data: {title, date, ...}, html, raw }]
- *
- * Parser Markdown minimale interno (headings, bold, italic, code, link,
- * liste, blockquote, paragrafi) con output escapato: il contenuto dei .md
- * è testo, non HTML fidato.
  */
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, parse } from 'node:path';
@@ -37,22 +29,73 @@ function inline(text) {
   return s;
 }
 
+function isTableRow(line) { return /^\|.+\|$/.test(line.trim()); }
+function isTableSep(line) { return /^\|[\s\-:|]+\|$/.test(line.trim()); }
+function parseTableCells(line) { return line.trim().slice(1, -1).split('|').map(c => c.trim()); }
+
+function extractFences(md) {
+  const fences = [];
+  const body = md.replace(/```(\w*)\r?\n([\s\S]*?)```/g, (_, lang, code) => {
+    const id = fences.length;
+    fences.push({ lang: lang || 'text', code: escapeHtml(code.replace(/\n$/, '')) });
+    return `\n\x00FENCE${id}\x00\n`;
+  });
+  return { body, fences };
+}
+
 export function markdownToHtml(md) {
-  const lines = md.split(/\r?\n/);
+  const { body, fences } = extractFences(md);
+  const lines = body.split(/\r?\n/);
   const out = [];
   let list = null, para = [];
-  const flushPara = () => { if (para.length) { out.push(`<p>${inline(para.join(' '))}</p>`); para = []; } };
+  const flushPara = () => {
+    if (!para.length) return;
+    const text = para.join(' ');
+    const fence = text.match(/^\x00FENCE(\d+)\x00$/);
+    if (fence) {
+      const f = fences[+fence[1]];
+      const cls = f.lang ? ` class="lang-${f.lang}"` : '';
+      out.push(`<pre><code${cls}>${f.code}</code></pre>`);
+    } else out.push(`<p>${inline(text)}</p>`);
+    para = [];
+  };
   const flushList = () => { if (list) { out.push(`<${list.tag}>${list.items.map(i => `<li>${inline(i)}</li>`).join('')}</${list.tag}>`); list = null; } };
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const fenceOnly = line.match(/^\x00FENCE(\d+)\x00$/);
+    if (fenceOnly) {
+      flushPara(); flushList();
+      const f = fences[+fenceOnly[1]];
+      const cls = f.lang ? ` class="lang-${f.lang}"` : '';
+      out.push(`<pre><code${cls}>${f.code}</code></pre>`);
+      continue;
+    }
+    if (isTableRow(line) && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+      flushPara(); flushList();
+      const headers = parseTableCells(line);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && isTableRow(lines[i]) && !isTableSep(lines[i])) {
+        rows.push(parseTableCells(lines[i]));
+        i++;
+      }
+      i--;
+      let tbl = '<table><thead><tr>' + headers.map(h => `<th>${inline(h)}</th>`).join('') + '</tr></thead><tbody>';
+      for (const row of rows) tbl += '<tr>' + row.map(c => `<td>${inline(c)}</td>`).join('') + '</tr>';
+      out.push(tbl + '</tbody></table>');
+      continue;
+    }
     const h = line.match(/^(#{1,6})\s+(.*)$/);
     const ul = line.match(/^[-*]\s+(.*)$/);
     const ol = line.match(/^\d+\.\s+(.*)$/);
     const bq = line.match(/^>\s?(.*)$/);
+    const hr = /^---+$/.test(line.trim());
     if (h) { flushPara(); flushList(); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); }
     else if (ul) { flushPara(); if (!list || list.tag !== 'ul') { flushList(); list = { tag: 'ul', items: [] }; } list.items.push(ul[1]); }
     else if (ol) { flushPara(); if (!list || list.tag !== 'ol') { flushList(); list = { tag: 'ol', items: [] }; } list.items.push(ol[1]); }
     else if (bq) { flushPara(); flushList(); out.push(`<blockquote>${inline(bq[1])}</blockquote>`); }
+    else if (hr) { flushPara(); flushList(); out.push('<hr>'); }
     else if (!line.trim()) { flushPara(); flushList(); }
     else para.push(line.trim());
   }
@@ -68,5 +111,8 @@ export function getCollection(dir, locale) {
     const src = readFileSync(join(dir, f), 'utf8');
     const { data, body } = parseFrontmatter(src);
     return { slug: data.slug || parse(f).name, data, html: markdownToHtml(body), raw: body };
-  }).sort((a, b) => (b.data.date || '').localeCompare?.(a.data.date || '') || 0);
+  }).sort((a, b) => {
+    if (a.data.order != null || b.data.order != null) return (a.data.order ?? 999) - (b.data.order ?? 999);
+    return (b.data.date || '').localeCompare?.(a.data.date || '') || 0;
+  });
 }

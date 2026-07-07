@@ -13,7 +13,6 @@ Dove gli altri framework chiedono *«come renderizziamo più veloce?»*, biagioj
 ## Indice
 
 - [Quick start](#quick-start)
-- [Migrazione](#migrazione-da-cvw-first)
 - [Come funziona](#come-funziona)
 - [Installazione](#installazione)
 - [Comandi](#comandi)
@@ -38,29 +37,6 @@ Produzione:
 ```bash
 npm run build    # → dist/ (HTML statico + sitemap + immagini ottimizzate)
 ```
-
----
-
-## Migrazione da cvw-first
-
-Il pacchetto npm **`cvw-first`** è stato rinominato in **`biagiojs`**. Stesso codice, nuovi nomi pubblici.
-
-| Prima | Dopo |
-|-------|------|
-| `npm i cvw-first` | `npm i biagiojs` |
-| `cvw dev` / `cvw build` | `biagio dev` / `biagio build` |
-| `cvw.config.js` | `biagio.config.js` |
-| `pages/*.page.cvw` | `pages/*.page.biagio` |
-| `import … from 'cvw-first/…'` | `import … from 'biagiojs/…'` |
-
-```bash
-npm uninstall cvw-first
-npm i biagiojs@^0.9.0
-```
-
-Le API runtime interne (`data-cvw-*`, `window.cvw`, `__CVW_PLAN__`) restano invariate per retrocompatibilità del codice già in produzione.
-
-Dettagli versione per versione: **[CHANGELOG.md](./CHANGELOG.md)**.
 
 ---
 
@@ -114,9 +90,15 @@ npm i -D subset-font         # solo se site.fonts.subset è abilitato
 | `npx biagio build .` | Build → `dist/` |
 | `npx biagio build . --clean` | Pulisce `dist/img/` prima della pipeline immagini |
 | `npx biagio build . --dryRun` | Pianifica bucket immagini senza scrivere file |
+| `npx biagio doctor .` | Validazione progetto (config, sharp, pagine, consent) |
+| `npx biagio analyze .` | Report pesi HTML/JS dopo build → `dist/.biagio-analyze.json` |
+| `npx biagio preview . [port]` | Server produzione Node (statico + ISR + SSR, gzip/br) |
 | `npx biagio pull-vitals <url> .` | CrUX/Lighthouse → `reports/crux.json` |
 | `npx create-biagiojs <dir>` | Scaffolding nuovo sito |
-| `npm run preview` | Adapter Node: statico + ISR + SSR on-demand |
+
+Config TypeScript: `biagio.config.ts` (richiede esbuild o vite in devDependencies).
+
+Deploy preset: in `biagio.config.js` imposta `site.deploy: 'cloudflare' | 'vercel' | 'netlify'` — alla build genera i file adapter se assenti.
 
 ---
 
@@ -246,7 +228,10 @@ site: { consent: { mode: 'native', categories: ['analytics', 'marketing'], polic
 | Scenario | Soluzione |
 |----------|-----------|
 | Sito statico | `dist/` su Cloudflare Pages, Netlify, Vercel, qualsiasi CDN |
-| ISR / SSR | `biagiojs/adapters/node` o `biagiojs/adapters/vercel` |
+| Preview locale | `biagio preview .` (adapter Node con compressione) |
+| ISR / SSR | `biagiojs/adapters/node`, `biagiojs/adapters/vercel`, `biagiojs/adapters/cloudflare` |
+
+**Preset deploy:** `site.deploy: 'cloudflare'` genera `wrangler.toml` + `functions/[[path]].js`. Analogo per Vercel e Netlify.
 
 **Cloudflare Pages (SSG):** build `npm run build`, output `dist/`, Node ≥ 18. Cache asset con `site.cache` → **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)**.
 
@@ -256,7 +241,8 @@ site: { consent: { mode: 'native', categories: ['analytics', 'marketing'], polic
 
 | Documento | Contenuto |
 |-----------|-----------|
-| **[AI-GUIDE.md](./AI-GUIDE.md)** | Riferimento operativo per agenti AI e sviluppatori (pesi, idratazione, config) |
+| **[biagio.danilosprovieri.com](https://biagio.danilosprovieri.com)** | Documentation site (EN default, IT at `/it/`) |
+| **[AI-GUIDE.md](./AI-GUIDE.md)** | Riferimento operativo per agenti AI e sviluppatori |
 | **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)** | Pipeline immagini, profili, `bySlug`, `smartImage()` |
 | **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)** | `_headers`, `! Cache-Control`, Cloudflare / Netlify |
 | **[CHANGELOG.md](./CHANGELOG.md)** | Storico versioni e note di rilascio |

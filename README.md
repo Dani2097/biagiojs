@@ -25,8 +25,10 @@ cd mio-sito && npm install && npm run dev
 ```bash
 cd biagiojs
 npm install
-npm test          # 95 test
+npm test          # 110 test
 npm run build     # demo → biagiojs/demo/dist
+npm run build:docs # docs → biagiojs/docs/dist
+npm run dev:docs  # dev server documentazione :4321
 npm run bench     # benchmark vs baseline naive
 ```
 
@@ -54,16 +56,11 @@ Richiede `npm login` e, con 2FA, l'OTP al publish.
 ## Documentazione
 
 - [README framework](./biagiojs/README.md)
+- [Sito documentazione](./biagiojs/docs/) — `npm run dev:docs` nel package biagiojs
 - [Guida agenti AI](./biagiojs/AI-GUIDE.md)
 - [Ottimizzazione immagini](./biagiojs/IMAGE-OPTIMIZATION.md)
 - [Cache deploy](./biagiojs/DEPLOY-CACHE.md)
 - [Changelog](./biagiojs/CHANGELOG.md)
-
----
-
-## Migrazione da cvw-first
-
-Vedi la sezione dedicata in [biagiojs/README.md#migrazione-da-cvw-first](./biagiojs/README.md#migrazione-da-cvw-first).
 
 ---
 

@@ -1,14 +1,16 @@
 {
   "name": "biagiojs",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Business-first web framework: Core Web Vitals as constraints, conversion/SEO/engagement as first-class citizens. SSR + adaptive islands + file-based routing.",
   "type": "module",
+  "types": "./types/index.d.ts",
   "bin": {
     "biagio": "src/cli.js",
     "create-biagiojs": "src/create-biagiojs.js"
   },
   "files": [
     "src",
+    "types",
     "README.md",
     "AI-GUIDE.md",
     "IMAGE-OPTIMIZATION.md",
@@ -42,12 +44,18 @@
     "./vite": "./src/vite/plugin.js",
     "./adapters/node": "./src/adapters/node.js",
     "./adapters/vercel": "./src/adapters/vercel.js",
+    "./adapters/cloudflare": "./src/adapters/cloudflare.js",
+    "./doctor": "./src/core/doctor.js",
+    "./analyze": "./src/core/analyze.js",
+    "./types": "./types/index.d.ts",
     "./consent": "./src/core/consent.js",
     "./server-render": "./src/server-render.js"
   },
   "scripts": {
     "build": "node src/cli.js build demo",
+    "build:docs": "node src/cli.js build docs",
     "dev": "node src/cli.js dev demo",
+    "dev:docs": "node src/cli.js dev docs",
     "test": "node --test test/*.test.js",
     "bench": "node bench/benchmark.js"
   },

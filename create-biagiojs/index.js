@@ -28,10 +28,12 @@ writeFileSync(join(root, 'package.json'), JSON.stringify({
   scripts: {
     dev: 'biagio dev .',
     build: 'biagio build .',
-    preview: 'node node_modules/biagiojs/src/adapters/node.js . 3000',
+    preview: 'biagio preview .',
+    doctor: 'biagio doctor .',
+    analyze: 'biagio analyze .',
     'pull-vitals': 'biagio pull-vitals',
   },
-  dependencies: { 'biagiojs': '^0.9.0' },
+  dependencies: { 'biagiojs': '^0.10.0' },
   devDependencies: { vite: '^6.0.0', sharp: '^0.33.0' },
 }, null, 2) + '\n');
 

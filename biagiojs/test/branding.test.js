@@ -28,7 +28,7 @@ test('package.json: nome npm, bin CLI, versione e lockfile', () => {
   assert.equal(pkg.name, 'biagiojs');
   assert.equal(pkg.bin.biagio, 'src/cli.js');
   assert.equal(pkg.bin['create-biagiojs'], 'src/create-biagiojs.js');
-  assert.equal(pkg.version, '0.9.0');
+  assert.equal(pkg.version, '0.10.0');
   const lock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
   assert.equal(lock.version, pkg.version, 'package-lock.json version deve coincidere con package.json');
   assert.equal(lock.packages[''].name, 'biagiojs', 'package-lock root name deve essere biagiojs');
@@ -48,6 +48,11 @@ test('CLI: routing pagine .page.biagio e config biagio.config.js', () => {
   assert.match(cli, /dependencies:\s*\{\s*'biagiojs'/);
   assert.doesNotMatch(cli, /'cvw-first'/);
   assert.match(cli, /loadBiagioFile/);
+});
+
+test('loadConfig supporta biagio.config.ts in config.js', () => {
+  const cfg = read('src/core/config.js');
+  assert.match(cfg, /biagio\.config\.ts/);
 });
 
 test('loadConfig legge biagio.config.js dal progetto', async () => {
@@ -74,7 +79,7 @@ test('font subset: scan include testo da pages/*.page.biagio', () => {
 
 test('create-biagiojs scaffold standalone: dipende da biagiojs', () => {
   const scaffold = read('../create-biagiojs/index.js');
-  assert.match(scaffold, /'biagiojs': '\^0\.9\.0'/);
+  assert.match(scaffold, /'biagiojs': '\^0\.10\.0'/);
   assert.match(scaffold, /biagio\.config\.js/);
   assert.match(scaffold, /index\.page\.biagio/);
   assert.doesNotMatch(scaffold, /cvw-first|cvw\.config/);
@@ -88,9 +93,9 @@ test('docs utente: AI-GUIDE e CHANGELOG senza CLI obsoleta', () => {
   }
 });
 
-test('README: sezione migrazione e link documentazione', () => {
+test('README: link documentazione (senza sezione migrazione)', () => {
   const readme = read('README.md');
-  assert.match(readme, /## Migrazione da cvw-first/);
+  assert.doesNotMatch(readme, /## Migrazione da cvw-first/);
   assert.match(readme, /IMAGE-OPTIMIZATION\.md/);
   assert.match(readme, /DEPLOY-CACHE\.md/);
   assert.match(readme, /AI-GUIDE\.md/);

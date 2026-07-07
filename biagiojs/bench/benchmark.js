@@ -4,9 +4,8 @@
 import { writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PerfNode, PerformanceGraph } from '../src/core/graph.js';
 import { renderPage } from '../src/ssr.js';
-import { hydrationPlan } from '../src/core/scheduler.js';
+import { hydrationPlan, renderOrder } from '../src/core/scheduler.js';
 import { optimize, loadReports } from '../src/core/optimizer.js';
 import { ExperimentEngine } from '../src/core/experiments.js';
 import buildProductPage from '../demo/pages/index.page.js';
@@ -33,14 +32,24 @@ const islandJs = (plan) => {
   for (const { node } of [...plan.eager, ...plan.lazy]) bytes += Buffer.byteLength(node.hydrate?.toString() || '');
   return bytes;
 };
-const convOffset = html => (html.indexOf('data-cvw-conversion="high"') / html.length * 100).toFixed(1);
+
+/** Prima isola ad alto valore conversion nel sorgente HTML (%) — usa data-cvw-id in prod. */
+function firstHighConvOffset(html, graph, plan) {
+  const hydrated = new Set([...plan.eager, ...plan.lazy].map(x => x.node.id));
+  const top = renderOrder(graph).find(n => n.conversionWeight >= 0.7 && hydrated.has(n.id));
+  if (!top) return '—';
+  const i = html.indexOf(`data-cvw-id="${top.id}"`);
+  if (i < 0) return '—';
+  return (i / html.length * 100).toFixed(1);
+}
+
 const seoScore = html => ['application/ld+json', 'rel="canonical"', 'og:title', 'BreadcrumbList'].filter(k => html.includes(k)).length;
 
 const rows = [
   ['Isole idratate (eager+lazy)', `${cvwPlan.eager.length}+${cvwPlan.lazy.length}`, `${naivePlan.eager.length}+${naivePlan.lazy.length}`],
   ['JS di isole spedito (byte)', islandJs(cvwPlan), islandJs(naivePlan)],
   ['Peso HTML (KB)', kb(cvwHtml), kb(naiveHtml)],
-  ['Primo elemento conversion nel sorgente (%)', convOffset(cvwHtml) + '%', convOffset(naiveHtml) + '%'],
+  ['Prima isola alto-valore nel sorgente (%)', firstHighConvOffset(cvwHtml, def.graph, cvwPlan) + '%', firstHighConvOffset(naiveHtml, naiveDef.graph, naivePlan) + '%'],
   ['Copertura SEO automatica (0-4)', seoScore(cvwHtml), seoScore(naiveHtml)],
 ];
 

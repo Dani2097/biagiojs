@@ -6,6 +6,9 @@
  *   node src/cli.js dev [dir]              → build + watch + live reload :4321
  *   node src/cli.js create <dir>           → scaffolding nuovo sito
  *   node src/cli.js pull-vitals <url> [dir]→ field data reali → reports/crux.json
+ *   node src/cli.js doctor [dir]           → validazione progetto pre-build
+ *   node src/cli.js analyze [dir]          → report pesi post-build
+ *   node src/cli.js preview [dir] [port]   → server produzione (adapter Node)
  *
  * Routing:
  *   pages/index.page.js        → /
@@ -37,6 +40,9 @@ import { loadConfig } from './core/config.js';
 import { validateImageRefs } from './core/validate-images.js';
 import { generateHeaders } from './core/cache-headers.js';
 import { collectSubsetText, subsetFontFiles } from './core/font-subset.js';
+import { runDoctor, formatDoctorReport } from './core/doctor.js';
+import { analyzeDist, formatAnalyzeReport } from './core/analyze.js';
+import { generateDeployPreset, parseDeploy } from './core/deploy-presets.js';
 
 function walkPages(dir, base = dir) {
   const out = [];
@@ -186,7 +192,9 @@ export async function build(projectDir, {
 
     if (mod.prerender === false) { log(`  skip ${file}: prerender=false → servita on-demand dall'adapter`); continue; }
 
-    const routeBase = file.replace(/\.page\.(js|ts|biagio)$/, '');
+    // index di cartella: pages/docs/index.page.js → route "docs" (→ /docs/).
+    // La index top-level resta "index" (→ /), gestita dai check `route === 'index'`.
+    const routeBase = file.replace(/\.page\.(js|ts|biagio)$/, '').replace(/\/index$/, '');
     // i18n: una variante per lingua (default a /, le altre a /<lang>/)
     const locales = site.locales?.length ? site.locales : [null];
     const defaultLocale = site.defaultLocale || site.locales?.[0] || null;
@@ -289,6 +297,12 @@ export async function build(projectDir, {
     log('  cache: _headers generato in dist/');
   }
 
+  const deployPlatform = parseDeploy(site);
+  if (deployPlatform) {
+    const created = generateDeployPreset(root, deployPlatform, { log });
+    if (created.length) log(`  deploy: preset ${deployPlatform} → ${created.join(', ')}`);
+  }
+
   const sitemapFile = (site.sitemap || 'sitemap.xml').replace(/^\//, '');
   writeFileSync(join(dist, sitemapFile), sitemap(site, builtPages));
   writeFileSync(join(dist, 'robots.txt'), robots(site));
@@ -380,9 +394,11 @@ export function create(dir) {
     scripts: {
       dev: 'biagio dev .',
       build: 'biagio build .',
-      preview: 'node node_modules/biagiojs/src/adapters/node.js . 3000',
+      preview: 'biagio preview .',
+      doctor: 'biagio doctor .',
+      analyze: 'biagio analyze .',
     },
-    dependencies: { 'biagiojs': '^0.9.0' },
+    dependencies: { 'biagiojs': '^0.10.0' },
     devDependencies: { vite: '^6.0.0', sharp: '^0.33.0' },
   }, null, 2) + '\n');
   writeFileSync(join(root, '.gitignore'), 'node_modules\ndist\n.env\n');
@@ -516,9 +532,28 @@ const buildOpts = { clean: flags.has('--clean'), dryRun: flags.has('--dryRun') |
 if (cmd === 'build') await build(arg1 || '.', buildOpts);
 else if (cmd === 'dev') { if (!await devVite(arg1 || '.')) serve(arg1 || '.', await build(arg1 || '.', { overlay: true, ...buildOpts })); }
 else if (cmd === 'create') { if (!arg1) throw new Error('Usage: biagio create <dir>'); create(arg1); }
+else if (cmd === 'doctor') {
+  const root = resolve(arg1 || '.');
+  const report = await runDoctor(root);
+  console.log(formatDoctorReport(report));
+  if (!report.ok) process.exit(1);
+}
+else if (cmd === 'analyze') {
+  const root = resolve(arg1 || '.');
+  const report = analyzeDist(root);
+  console.log(formatAnalyzeReport(report));
+  console.log(`\n→ ${report.reportPath}`);
+}
+else if (cmd === 'preview') {
+  const root = resolve(arg1 || '.');
+  const port = +(arg2 || process.env.PORT || 3000);
+  const { createBiagioServer } = await import('./adapters/node.js');
+  createBiagioServer(root, { compress: !flags.has('--no-compress') }).listen(port, () =>
+    console.log(`\npreview → http://localhost:${port} (statico + ISR + SSR on-demand${flags.has('--no-compress') ? '' : ', gzip/br'})`));
+}
 else if (cmd === 'pull-vitals') {
   if (!arg1) throw new Error('Usage: biagio pull-vitals <url> [projectDir]');
   const out = await pullVitals(arg1, join(resolve(arg2 || '.'), 'reports'));
   console.log('✔ field data salvati in reports/crux.json:', JSON.stringify(out.p75));
 }
-else if (cmd) console.log('Usage: biagio build|dev|create|pull-vitals [args] [--clean] [--dryRun]');
+else if (cmd) console.log('Usage: biagio build|dev|create|doctor|analyze|preview|pull-vitals [args] [--clean] [--dryRun] [--no-compress]');

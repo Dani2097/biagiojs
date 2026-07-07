@@ -10,6 +10,28 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/). Versioning [S
 
 ---
 
+## [0.10.0] — 2026-07-07
+
+### Aggiunto
+
+- **`biagio doctor`** — validazione progetto pre-build (config, sharp, pagine, consent)
+- **`biagio analyze`** — report pesi HTML/JS post-build in `dist/.biagio-analyze.json`
+- **`biagio preview`** — server produzione via adapter Node (gzip/brotli)
+- **`site.deploy`** — preset Cloudflare / Vercel / Netlify generati alla build
+- **Adapter Cloudflare** — `biagiojs/adapters/cloudflare` per Pages Functions
+- **Compressione** gzip/brotli sull'adapter Node
+- **HMR granulare isole** — `/islands/` servite via Vite `transformRequest` in dev
+- **TypeScript** — `biagio.config.ts`, tipi in `biagiojs/types`
+- **Documentation site** — `biagiojs/docs/` (bilingual EN/IT, native hreflang + `locales/*.json`), `npm run dev:docs`
+- Parser Markdown: blocchi codice e tabelle; `collectImageRefs` ignora `<pre>`
+- Benchmark: metrica conversion corretta (usa `data-cvw-id` in prod, non overlay)
+
+### Modificato
+
+- Scaffold e `create-biagiojs` aggiornati a `^0.10.0`
+
+---
+
 ## [0.9.0] — 2026-07-07
 
 ### Rinominato — primo publish npm come `biagiojs`
@@ -27,19 +49,6 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/). Versioning [S
 - README, AI-GUIDE, CHANGELOG, DEPLOY-CACHE, IMAGE-OPTIMIZATION riscritti
 - README monorepo root con workflow publish
 - `create-biagiojs/README.md` nuovo
-
-### Migrazione rapida
-
-```bash
-npm uninstall cvw-first
-npm i biagiojs@^0.9.0
-```
-
-| Prima | Dopo |
-|-------|------|
-| `import … from 'cvw-first/graph'` | `import … from 'biagiojs/graph'` |
-| `cvw build .` | `biagio build .` |
-| `cvw.config.js` | `biagio.config.js` |
 
 Le API runtime interne (`__CVW_*`, `data-cvw-*`, `window.cvw`) restano invariate.
 

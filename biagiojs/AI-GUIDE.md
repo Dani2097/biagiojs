@@ -282,21 +282,15 @@ Vedi [IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md) per profili e `smartImage(
 npx biagio dev .
 npx biagio build .
 npx biagio build . --clean --dryRun
+npx biagio doctor .
+npx biagio analyze .
+npx biagio preview .
 npx biagio pull-vitals <url> .
-npm test    # nel repo framework: 95 test
+npm test    # nel repo framework
 ```
 
-Deploy: statico → Cloudflare Pages / Netlify / Vercel (`dist/`). SSR/ISR → `biagiojs/adapters/node` o `biagiojs/adapters/vercel`.
+Deploy: statico → Cloudflare Pages / Netlify / Vercel (`dist/`). SSR/ISR → `biagiojs/adapters/node`, `biagiojs/adapters/vercel`, `biagiojs/adapters/cloudflare`. Preset: `site.deploy: 'cloudflare' | 'vercel' | 'netlify'`.
 
----
+Sito docs: `npm run dev:docs` nel repo framework (`biagiojs/docs/`).
 
-## Migrazione nomi (solo se trovi codice legacy)
-
-| Legacy | Attuale |
-|--------|---------|
-| `cvw-first` (npm) | `biagiojs` |
-| `cvw.config.js` | `biagio.config.js` |
-| `.page.cvw` | `.page.biagio` |
-| `cvw` (CLI) | `biagio` |
-
-API runtime (`data-cvw-*`, `window.cvw`) **non** vanno rinominate.
+Config TypeScript: `biagio.config.ts` (serve esbuild o vite). Tipi: `import type { BiagioConfig } from 'biagiojs/types'`.

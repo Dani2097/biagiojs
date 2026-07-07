@@ -9,8 +9,9 @@ import { slugConfigFor } from './image-slug-config.js';
 const IMG_REF = /\/img\/([\w-]+)-(\d+)w\.(avif|webp|jpe?g)/gi;
 
 export function collectImageRefs(html) {
+  const stripped = html.replace(/<pre[^>]*>[\s\S]*?<\/pre>/gi, '');
   const refs = new Set();
-  for (const m of html.matchAll(IMG_REF)) {
+  for (const m of stripped.matchAll(IMG_REF)) {
     const ext = m[3] === 'jpeg' ? 'jpg' : m[3];
     refs.add(`${m[1]}-${m[2]}w.${ext}`);
   }

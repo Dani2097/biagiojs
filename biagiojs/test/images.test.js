@@ -96,6 +96,12 @@ test('collectImageRefs estrae riferimenti da srcset', () => {
   assert.ok(refs.includes('hero-960w.webp'));
 });
 
+test('collectImageRefs ignora esempi in blocchi pre/code', () => {
+  const html = '<pre><code>/img/hero-480w.avif</code></pre><img src="/img/real-480w.jpg">';
+  const refs = collectImageRefs(html);
+  assert.deepEqual(refs, ['real-480w.jpg']);
+});
+
 test('validateImageRefs segnala file mancanti', () => {
   const dir = mkdtempSync(join(tmpdir(), 'cvw-img-'));
   mkdirSync(join(dir, 'img'), { recursive: true });

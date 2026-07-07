@@ -1,5 +1,5 @@
 /**
- * biagiojs — caricamento biagio.config.js con default unificati.
+ * biagiojs — caricamento biagio.config.js / .ts con default unificati.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -10,15 +10,29 @@ import { parseFontInject } from './fonts.js';
 export const DEFAULT_IMAGE_WIDTHS = [480, 960, 1440];
 
 function parseFontInjectConfig(fonts = {}) {
-  const mode = parseFontInject(fonts.inject);
-  return mode;
+  return parseFontInject(fonts.inject);
+}
+
+async function loadConfigModule(root) {
+  const tsPath = join(root, 'biagio.config.ts');
+  const jsPath = join(root, 'biagio.config.js');
+  if (existsSync(tsPath)) {
+    let esbuild;
+    try { esbuild = await import('esbuild'); } catch {
+      throw new Error('[biagio] biagio.config.ts richiede esbuild (npm i -D vite o esbuild)');
+    }
+    const { code } = await esbuild.transform(readFileSync(tsPath, 'utf8'), { loader: 'ts', format: 'esm' });
+    const url = `data:application/javascript;base64,${Buffer.from(code).toString('base64')}`;
+    return (await import(url)).default;
+  }
+  if (existsSync(jsPath)) {
+    return (await import(pathToFileURL(jsPath).href + '?t=' + Date.now())).default;
+  }
+  return {};
 }
 
 export async function loadConfig(root) {
-  const configPath = join(root, 'biagio.config.js');
-  const raw = existsSync(configPath)
-    ? (await import(pathToFileURL(configPath).href + '?t=' + Date.now())).default
-    : {};
+  const raw = await loadConfigModule(root);
 
   const site = raw.site || { name: 'biagiojs Site', baseUrl: 'https://example.com' };
   const images = {
@@ -73,14 +87,16 @@ export async function loadConfig(root) {
 
   const cache = site.cache ?? null;
   const sitemap = site.sitemap || 'sitemap.xml';
+  const deploy = site.deploy ?? null;
 
   return {
     ...raw,
-    site: { ...site, images, optimize, fonts, cache, sitemap },
+    site: { ...site, images, optimize, fonts, cache, sitemap, deploy },
     images,
     fonts,
     optimize,
     cache,
+    deploy,
     hooks: raw.hooks || {},
   };
 }
