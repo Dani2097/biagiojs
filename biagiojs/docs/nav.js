@@ -2,8 +2,8 @@
 export const DOC_SECTIONS = [
   { key: 'start', items: ['getting-started', 'project-structure'] },
   { key: 'syntax', items: ['syntax-biagio', 'syntax-javascript'] },
-  { key: 'concepts', items: ['business-weights', 'hydration', 'seo'] },
-  { key: 'guides', items: ['images', 'deploy', 'cli'] },
+  { key: 'concepts', items: ['business-weights', 'hydration', 'seo', 'i18n'] },
+  { key: 'guides', items: ['images', 'fonts', 'consent', 'optimization', 'deploy', 'cli'] },
   { key: 'ref', items: ['changelog'] },
 ];
 

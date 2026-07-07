@@ -62,7 +62,11 @@ Un solo IIFE contiene piano, props, codice isole e hydration runtime. Niente wat
 
 ## Consent gating
 
-Isole con `consent="marketing"` (o altra categoria) restano in attesa finché l'utente non accetta. Zero JS di terze parti sul critical path.
+Isole con `consent="marketing"` (o altra categoria) restano in attesa finché l'utente non accetta. Zero JS di terze parti sul critical path. Vedi [Consent & cookie](/it/docs/consent/).
+
+## CrUX feedback
+
+Dati di campo lenti alzano automaticamente le soglie eager/lazy. Vedi [Loop di ottimizzazione](/it/docs/optimization/).
 
 ## Benchmark
 

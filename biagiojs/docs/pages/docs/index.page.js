@@ -38,6 +38,7 @@ export default function ({ site, t, locale, defaultLocale, page }) {
         { name: t('nav.home'), path: path('/') },
         { name: t('docsIndex.breadcrumb'), path: path('/docs/') },
       ],
+      hideBreadcrumb: true,
       sitemapPriority: 0.9,
       lastmod: '2026-07-07',
     },

@@ -62,7 +62,11 @@ A single IIFE contains plan, props, island code and hydration runtime. No waterf
 
 ## Consent gating
 
-Islands with `consent="marketing"` wait until the user accepts. Zero third-party JS on the critical path.
+Islands with `consent="marketing"` wait until the user accepts. Zero third-party JS on the critical path. See [Consent & cookies](/docs/consent/).
+
+## CrUX feedback
+
+Slow field data raises eager/lazy thresholds automatically. See [Optimization loop](/docs/optimization/).
 
 ## Benchmark
 

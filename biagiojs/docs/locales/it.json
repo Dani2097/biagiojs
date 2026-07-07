@@ -20,7 +20,11 @@
       "business-weights": "Pesi business",
       "hydration": "Idratazione adattiva",
       "seo": "SEO automatica",
+      "i18n": "Internazionalizzazione",
       "images": "Immagini",
+      "fonts": "Font",
+      "consent": "Consent & cookie",
+      "optimization": "Loop di ottimizzazione",
       "deploy": "Deploy & cache",
       "cli": "CLI",
       "changelog": "Changelog"
@@ -33,7 +37,11 @@
       "business-weights": "conversion, seo, interaction",
       "hydration": "eager, lazy, static",
       "seo": "meta, JSON-LD, hreflang",
+      "i18n": "locales, routing, report per mercato",
       "images": "sharp, smartImage, profili",
+      "fonts": "self-host, preload, subset",
+      "consent": "banner nativo, Cookiebot, Iubenda",
+      "optimization": "CrUX, report, test A/B",
       "deploy": "CDN, preset, headers",
       "cli": "build, dev, doctor, analyze",
       "changelog": "note di rilascio"

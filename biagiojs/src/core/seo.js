@@ -212,9 +212,9 @@ export function faviconTags(favicon) {
   return tags;
 }
 
-/** Visible breadcrumb HTML (also SEO-relevant content). */
+/** Visible breadcrumb HTML (also SEO-relevant content). Set page.hideBreadcrumb to skip. */
 export function breadcrumbHtml(page) {
-  if (!page.breadcrumbs?.length) return '';
+  if (page.hideBreadcrumb || !page.breadcrumbs?.length) return '';
   const items = page.breadcrumbs.map((b, i) => {
     const isLast = i === page.breadcrumbs.length - 1;
     if (isLast) return `<span aria-current="page">${esc(b.name)}</span>`;

@@ -52,6 +52,7 @@ export default function ({ props: { post }, site, t, locale, defaultLocale }) {
         { name: t('breadcrumb.docs'), path: path('/docs/') },
         { name: label, path: path(docPath) },
       ],
+      hideBreadcrumb: true,
       sitemapPriority: post.data.priority ?? 0.7,
       lastmod: post.data.lastmod || '2026-07-07',
     },
