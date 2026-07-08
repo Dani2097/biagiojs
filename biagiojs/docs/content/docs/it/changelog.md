@@ -23,6 +23,14 @@ lastmod: 2026-07-07
 - Sito documentazione (questo sito)
 - Parser Markdown: blocchi codice e tabelle
 
+### Sito docs (aggiornamenti)
+
+- Guide: font, consent, i18n, optimization loop
+- `/llms.txt` e `/docs/ai-agents/` per agenti LLM
+- SEO: `og.png`, `og:locale` (`en_US`/`it_IT`), `hideBreadcrumb`
+- Nav mobile docs: sezioni accordion
+- README in inglese, link sito in navbar
+
 ---
 
 ## 0.9.0 — 2026-07-07

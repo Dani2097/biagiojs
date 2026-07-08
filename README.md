@@ -1,69 +1,52 @@
 # biagiojs — monorepo
 
-Repository ufficiale del framework **[biagiojs](https://github.com/Dani2097/biagiojs)**.
+Official repository for the **[biagiojs](https://biagio.danilosprovieri.com)** framework.
 
-| Pacchetto | Cartella | npm | Descrizione |
-|-----------|----------|-----|-------------|
-| **biagiojs** | [`biagiojs/`](./biagiojs) | [`biagiojs`](https://www.npmjs.com/package/biagiojs) | Framework: CLI `biagio`, SSR/SSG, isole, optimizer |
-| **create-biagiojs** | [`create-biagiojs/`](./create-biagiojs) | [`create-biagiojs`](https://www.npmjs.com/package/create-biagiojs) | Scaffolding: `npx create-biagiojs mio-sito` |
+**[Site](https://biagio.danilosprovieri.com)** · **[Documentation](https://biagio.danilosprovieri.com/docs)** · **[npm](https://www.npmjs.com/package/biagiojs)** · **[GitHub](https://github.com/Dani2097/biagiojs)**
 
-> Il README completo del framework è in **[biagiojs/README.md](./biagiojs/README.md)**.
+| Package | Folder | npm | Description |
+|---------|--------|-----|-------------|
+| **biagiojs** | [`biagiojs/`](./biagiojs) | [`biagiojs`](https://www.npmjs.com/package/biagiojs) | Framework: `biagio` CLI, SSR/SSG, islands, optimizer |
+| **create-biagiojs** | [`create-biagiojs/`](./create-biagiojs) | [`create-biagiojs`](https://www.npmjs.com/package/create-biagiojs) | Scaffolding: `npx create-biagiojs my-site` |
+
+> Full framework README: **[biagiojs/README.md](./biagiojs/README.md)**
 
 ---
 
 ## Quick start
 
 ```bash
-npx create-biagiojs mio-sito
-cd mio-sito && npm install && npm run dev
+npx create-biagiojs my-site
+cd my-site && npm install && npm run dev
 ```
 
 ---
 
-## Sviluppo nel monorepo
+## Monorepo development
 
 ```bash
 cd biagiojs
 npm install
-npm test          # 110 test
+npm test          # test suite
 npm run build     # demo → biagiojs/demo/dist
 npm run build:docs # docs → biagiojs/docs/dist
-npm run dev:docs  # dev server documentazione :4321
-npm run bench     # benchmark vs baseline naive
+npm run dev:docs  # documentation dev server :4321
+npm run bench     # benchmark vs naive baseline
 ```
 
 ---
 
-## Pubblicazione su npm
+## Documentation
 
-```bash
-# 1. Framework
-cd biagiojs
-npm test && npm publish --dry-run && npm publish
-
-# 2. Scaffolding
-cd ../create-biagiojs
-npm publish --dry-run && npm publish
-
-# 3. Depreca il vecchio nome (una tantum)
-npm deprecate cvw-first "Rinominato in biagiojs — usa: npm i biagiojs@latest"
-```
-
-Richiede `npm login` e, con 2FA, l'OTP al publish.
-
----
-
-## Documentazione
-
-- [README framework](./biagiojs/README.md)
-- [Sito documentazione](./biagiojs/docs/) — `npm run dev:docs` nel package biagiojs
-- [Guida agenti AI](./biagiojs/AI-GUIDE.md)
-- [Ottimizzazione immagini](./biagiojs/IMAGE-OPTIMIZATION.md)
-- [Cache deploy](./biagiojs/DEPLOY-CACHE.md)
+- **[biagio.danilosprovieri.com](https://biagio.danilosprovieri.com/docs)** — documentation site (EN default, IT at `/it/`)
+- [Framework README](./biagiojs/README.md)
+- [AI agent guide](./biagiojs/AI-GUIDE.md)
+- [Image optimization](./biagiojs/IMAGE-OPTIMIZATION.md)
+- [Deploy cache](./biagiojs/DEPLOY-CACHE.md)
 - [Changelog](./biagiojs/CHANGELOG.md)
 
 ---
 
-## Licenza
+## License
 
 MIT © Danilo Sprovieri

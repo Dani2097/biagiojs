@@ -1,47 +1,44 @@
 # create-biagiojs
 
-Scaffolding ufficiale per progetti **[biagiojs](https://github.com/Dani2097/biagiojs)**.
+Official scaffolding for **[biagiojs](https://biagio.danilosprovieri.com)** projects.
+
+**[Site](https://biagio.danilosprovieri.com)** · **[Documentation](https://biagio.danilosprovieri.com/docs)** · **[npm](https://www.npmjs.com/package/create-biagiojs)**
 
 ```bash
-npx create-biagiojs mio-sito
-cd mio-sito && npm install && npm run dev
+npx create-biagiojs my-site
+cd my-site && npm install && npm run dev
 ```
 
-## Cosa genera
+## What it generates
 
 ```
-mio-sito/
+my-site/
 ├── biagio.config.js
-├── package.json          # dipende da biagiojs
+├── package.json          # depends on biagiojs
 ├── pages/index.page.biagio
-├── public/_headers       # cache Cloudflare / Netlify
+├── public/_headers       # Cloudflare / Netlify cache
 ├── images/
 └── …
 ```
 
-## Script npm generati
+## Generated npm scripts
 
-| Script | Comando |
+| Script | Command |
 |--------|---------|
 | `dev` | `biagio dev .` |
 | `build` | `biagio build .` |
-| `preview` | adapter Node su porta 3000 |
+| `preview` | Node adapter on port 3000 |
 
-## Documentazione
+## Documentation
 
-Tutta la documentazione del framework è nel pacchetto principale:
+Framework documentation:
 
+- **[biagio.danilosprovieri.com](https://biagio.danilosprovieri.com/docs)**
 - [biagiojs README](https://github.com/Dani2097/biagiojs/blob/main/biagiojs/README.md)
-- [Guida agenti AI](https://github.com/Dani2097/biagiojs/blob/main/biagiojs/AI-GUIDE.md)
+- [AI agent guide](https://github.com/Dani2097/biagiojs/blob/main/biagiojs/AI-GUIDE.md)
 
-## Pubblicazione
+Standalone package: includes the scaffolding template only, not the framework itself.
 
-```bash
-npm publish
-```
-
-Pacchetto standalone: non include il framework, solo il template di scaffolding.
-
-## Licenza
+## License
 
 MIT © Danilo Sprovieri

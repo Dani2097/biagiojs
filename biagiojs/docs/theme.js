@@ -82,8 +82,8 @@ export const CSS = `
 
   /* ── Header ── */
   .topbar{
-    display:flex;align-items:center;gap:22px;
-    padding:0 max(20px,4vw);height:58px;
+    display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;
+    padding:0 max(20px,4vw);min-height:58px;
     border-bottom:1px solid var(--line);
     background:color-mix(in srgb,var(--bg) 82%,transparent);
     backdrop-filter:saturate(140%) blur(10px);
@@ -93,6 +93,7 @@ export const CSS = `
     display:inline-flex;align-items:center;gap:9px;
     font-family:var(--mono);font-size:16px;font-weight:650;
     text-decoration:none;color:var(--ink);letter-spacing:-.03em;
+    flex-shrink:0;
   }
   .topbar .brand .dot{
     width:11px;height:11px;border-radius:3px;
@@ -100,24 +101,53 @@ export const CSS = `
     box-shadow:0 0 0 3px var(--accent-soft);
   }
   .topbar .brand em{font-style:normal;color:var(--accent)}
-  .topbar nav{display:flex;gap:6px;margin-left:auto;align-items:center}
+  .topbar-end{
+    display:flex;align-items:center;gap:6px;
+    flex-shrink:0;
+  }
+  .topbar nav{display:flex;gap:6px;align-items:center;min-width:0;margin-left:auto}
   .topbar nav a{
     font-size:13px;color:var(--muted);text-decoration:none;
     font-family:var(--mono);padding:6px 10px;border-radius:8px;
+    white-space:nowrap;
   }
   .topbar nav a:hover{color:var(--ink);background:var(--surface-2)}
   .topbar nav a.active{color:var(--ink);background:var(--accent-soft)}
-  .topbar .lang{display:flex;align-items:center;font-family:var(--mono);font-size:12px;margin-left:6px}
+  .topbar .lang{display:flex;align-items:center;font-family:var(--mono);font-size:12px}
   .topbar .lang a{color:var(--muted);text-decoration:none;padding:3px 6px;border-radius:6px}
   .topbar .lang a.active{color:var(--ink);font-weight:650;background:var(--surface-2)}
   .topbar .lang .lang-sep{color:var(--line-2);margin:0 1px}
   .theme-toggle{
-    width:34px;height:34px;flex:none;margin-left:4px;
+    width:34px;height:34px;flex:none;
     border:1px solid var(--line);border-radius:9px;background:var(--surface);
     color:var(--ink);cursor:pointer;font-size:15px;line-height:1;
     display:inline-flex;align-items:center;justify-content:center;
   }
   .theme-toggle:hover{border-color:var(--line-2);color:var(--accent)}
+
+  @media(max-width:640px){
+    .topbar{
+      gap:8px 10px;
+      padding:10px 12px;
+      align-content:center;
+    }
+    .topbar .brand{font-size:15px;gap:7px}
+    .topbar .brand .dot{width:9px;height:9px}
+    .topbar-end{gap:4px}
+    .topbar-end{margin-left:auto}
+    .topbar nav{
+      order:3;flex:1 1 100%;margin-left:0;
+      gap:4px;padding:2px 0 1px;
+      overflow-x:auto;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      mask-image:linear-gradient(90deg,#000 94%,transparent);
+    }
+    .topbar nav::-webkit-scrollbar{display:none}
+    .topbar nav a{font-size:12px;padding:5px 8px}
+    .topbar .lang{font-size:11px}
+    .topbar .lang a{padding:2px 5px}
+    .theme-toggle{width:32px;height:32px;font-size:14px}
+  }
   .theme-toggle::before{content:'☾'}
   :root[data-theme="dark"] .theme-toggle::before{content:'☀'}
 
@@ -385,21 +415,34 @@ export const CSS = `
     border-right:1px solid var(--line);
   }
   .docs-sidebar .group{margin-bottom:22px}
-  .docs-sidebar .group-title{
+  .docs-sidebar .group-title,
+  .docs-nav-group summary.group-title{
     font-family:var(--mono);font-size:11px;font-weight:650;
     letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
     padding:0 22px;margin-bottom:8px;
   }
-  .docs-sidebar a{
+  .docs-sidebar a,
+  .docs-nav-group a{
     display:block;padding:6px 22px;font-size:14px;
     color:var(--muted);text-decoration:none;
     border-left:2px solid transparent;
   }
-  .docs-sidebar a:hover{color:var(--ink)}
-  .docs-sidebar a.active{
+  .docs-sidebar a:hover,
+  .docs-nav-group a:hover{color:var(--ink)}
+  .docs-sidebar a.active,
+  .docs-nav-group a.active{
     color:var(--accent);font-weight:600;
     border-left-color:var(--accent);background:var(--accent-soft);
   }
+  .docs-nav-group{margin-bottom:22px}
+  .docs-nav-group summary{list-style:none;cursor:default}
+  .docs-nav-group summary::-webkit-details-marker{display:none}
+
+  @media(min-width:901px){
+    .docs-nav-group summary{display:none}
+    .docs-nav-group .group-links{display:block}
+  }
+
   .docs-main{padding:40px clamp(20px,4vw,56px) 88px;max-width:760px}
   .docs-main .breadcrumb{
     font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:28px;
@@ -409,8 +452,28 @@ export const CSS = `
 
   @media(max-width:900px){
     .docs-shell{grid-template-columns:1fr}
-    .docs-sidebar{position:relative;top:0;height:auto;border-right:none;border-bottom:1px solid var(--line);padding:14px 0}
-    .docs-sidebar .group{display:inline-block;vertical-align:top;margin-right:14px}
+    .docs-sidebar{
+      position:relative;top:0;height:auto;border-right:none;
+      border-bottom:1px solid var(--line);padding:0;overflow:visible;
+    }
+    .docs-nav-group{border-bottom:1px solid var(--line)}
+    .docs-nav-group:last-child{border-bottom:none}
+    .docs-nav-group summary.group-title{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 20px;margin:0;cursor:pointer;
+      font-size:12px;color:var(--ink-soft);
+    }
+    .docs-nav-group summary.group-title::after{
+      content:'+';font-size:16px;font-weight:400;color:var(--muted);
+    }
+    .docs-nav-group[open] summary.group-title::after{content:'−'}
+    .docs-nav-group .group-links{padding:4px 0 12px}
+    .docs-nav-group a{
+      padding:8px 20px 8px 28px;font-size:14px;border-left:none;
+    }
+    .docs-nav-group a.active{
+      border-left:2px solid var(--accent);margin-left:0;
+    }
     .docs-main{padding:24px 20px 64px}
   }
 
@@ -485,12 +548,15 @@ export function topbar({ t, lp, active = '', langHtml = '' }) {
   return `<header class="topbar">
     <a class="brand" href="${lp('/')}"><span class="dot"></span>biagio<em>js</em></a>
     <nav>
+      ${link(lp('/'), t('nav.site'), 'site')}
       ${link(lp('/docs/'), t('nav.docs'), 'docs')}
       ${link('https://github.com/Dani2097/biagiojs', t('nav.github'), 'gh')}
       ${link('https://www.npmjs.com/package/biagiojs', 'npm', 'npm')}
     </nav>
-    <div class="lang">${langHtml}</div>
-    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme"></button>
+    <div class="topbar-end">
+      <div class="lang">${langHtml}</div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme"></button>
+    </div>
   </header>`;
 }
 

@@ -1,9 +1,9 @@
 ---
 title: SEO automatica
-description: Meta tag, canonical, Open Graph, JSON-LD, sitemap e hreflang senza plugin.
+description: Meta tag, canonical, Open Graph, JSON-LD, sitemap, hreflang e llms.txt senza plugin.
 order: 7
 priority: 0.8
-lastmod: 2026-07-07
+lastmod: 2026-07-08
 ---
 
 # SEO automatica
@@ -18,14 +18,16 @@ Per ogni pagina, automaticamente:
 - `rel="canonical"`
 - Open Graph (`og:title`, `og:description`, `og:image`, `og:url`)
 - Twitter Card
-- JSON-LD (WebSite, Product, Article, BreadcrumbList)
+- JSON-LD (Organization, WebSite, SoftwareApplication, TechArticle, BreadcrumbList)
 - `hreflang` (se `site.locales`)
+- `og:locale` come `en_US` / `it_IT`
 - Favicon link
 
 A livello sito:
 
-- `sitemap.xml` con priorità e lastmod
-- `robots.txt`
+- `sitemap.xml` con priorità, lastmod e alternates `xhtml:link`
+- `robots.txt` con link alla sitemap
+- `/llms.txt` — indice curato per agenti AI ([spec](https://llmstxt.org/))
 
 ## Configurazione pagina
 
@@ -37,7 +39,7 @@ In `.biagio`:
       type="product"
       image="/img/prodotto-960w.jpg"
       sitemapPriority="0.9"
-      lastmod="2026-07-07" />
+      lastmod="2026-07-08" />
 ```
 
 In `.page.js`:
@@ -46,37 +48,38 @@ In `.page.js`:
 page: {
   title: 'Titolo pagina',
   description: '…',
-  type: 'product',
-  image: '/img/hero-960w.jpg',
-  product: { name: 'X', price: 129, currency: 'EUR', rating: 4.7, reviewCount: 100 },
-  breadcrumbs: [{ name: 'Home', path: '/' }, { name: 'Shop', path: '/shop/' }],
-  noindex: false,
+  breadcrumbs: [{ name: 'Home', path: '/' }],
+  hideBreadcrumb: true,  // se il layout ha già il breadcrumb visivo
 }
 ```
 
-## Breadcrumb
+## Immagine Open Graph
 
-Se passi `breadcrumbs`, viene generato JSON-LD `BreadcrumbList` e markup visivo.
+Usa **PNG o JPEG** 1200×630 per `site.ogImage` — i social non renderizzano SVG in modo affidabile.
 
-## Multilingua
+```js
+site: {
+  ogImage: { src: '/og.png', width: 1200, height: 630, alt: '…' },
+}
+```
 
-Con `site.locales: ['it', 'en']` e `site.defaultLocale: 'it'`:
+## hreflang (i18n)
 
-- Route `/` = italiano, `/en/` = inglese
-- `hreflang` alternate in ogni pagina
-- Sitemap con `xhtml:link` per ogni lingua
-- Report optimizer per mercato in `reports/en/`
+Con `site.locales: ['en', 'it']` e `defaultLocale: 'en'`:
 
-## Immagini e LCP
+- Lingua default su `/`, le altre su `/<lang>/…`
+- `hreflang` alternate su ogni pagina
+- Sitemap con `xhtml:link` per lingua
+- Report optimizer per mercato in `reports/it/`
 
-Usa `smartImage()` con `aboveFold: true` e profilo `hero` per il LCP. La pipeline genera AVIF/WebP/JPEG con `srcset` corretto.
+**Questo sito docs** è bilingue: inglese su `/`, italiano su `/it/`.
 
 ## noindex
 
-`noindex: true` o attributo `noindex` su `<page>` esclude la pagina da `sitemap.xml`.
+`noindex: true` esclude la pagina da `sitemap.xml`.
 
 ## baseUrl
 
-**Obbligatorio in produzione.** `site.baseUrl` alimenta canonical, OG url e sitemap. Un placeholder `example.com` genera warning in `biagio doctor`.
+**Obbligatorio in produzione.** `site.baseUrl` alimenta canonical, OG e sitemap.
 
-Il sito docs ufficiale usa `https://biagio.danilosprovieri.com` — ogni pagina riceve quel canonical automaticamente alla build.
+Il sito ufficiale usa `https://biagio.danilosprovieri.com`. Invia `https://biagio.danilosprovieri.com/sitemap.xml` in Google Search Console. Vedi anche [Agenti AI](/it/docs/ai-agents/) per `llms.txt`.

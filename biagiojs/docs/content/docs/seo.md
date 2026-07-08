@@ -18,14 +18,16 @@ Per page, automatically:
 - `rel="canonical"`
 - Open Graph (`og:title`, `og:description`, `og:image`, `og:url`)
 - Twitter Card
-- JSON-LD (WebSite, Product, Article, BreadcrumbList)
+- JSON-LD (Organization, WebSite, SoftwareApplication, TechArticle, BreadcrumbList)
 - `hreflang` (when `site.locales` is set)
+- `og:locale` as `en_US` / `it_IT` (Open Graph format)
 - Favicon link
 
 Site-wide:
 
-- `sitemap.xml` with priority and lastmod
-- `robots.txt`
+- `sitemap.xml` with priority, lastmod and `xhtml:link` hreflang alternates
+- `robots.txt` pointing to the sitemap
+- `/llms.txt` — curated index for AI agents ([spec](https://llmstxt.org/))
 
 ## Page configuration
 
@@ -53,6 +55,20 @@ page: {
 }
 ```
 
+## Open Graph image
+
+Use a **PNG or JPEG** at 1200×630 for `site.ogImage` — social networks do not reliably render SVG.
+
+```js
+site: {
+  ogImage: { src: '/og.png', width: 1200, height: 630, alt: '…' },
+}
+```
+
+## Duplicate breadcrumbs
+
+If your layout renders its own breadcrumb, set `hideBreadcrumb: true` on `page` — JSON-LD `BreadcrumbList` is still emitted.
+
 ## hreflang (i18n)
 
 With `site.locales: ['en', 'it']` and `defaultLocale: 'en'`:
@@ -77,3 +93,5 @@ Use `smartImage()` with `aboveFold: true` and `hero` profile for LCP. The pipeli
 **Required in production.** `site.baseUrl` feeds canonical, OG url and sitemap. A placeholder triggers a warning in `biagio doctor`.
 
 The official docs site uses `https://biagio.danilosprovieri.com` — every page gets that canonical automatically at build time.
+
+Submit `https://biagio.danilosprovieri.com/sitemap.xml` in Google Search Console after deploy. See also [AI agents](/docs/ai-agents/) for `llms.txt`.

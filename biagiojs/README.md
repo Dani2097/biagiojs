@@ -1,142 +1,144 @@
 # biagiojs
 
-**Framework web business-first** — Core Web Vitals come vincoli, conversione / SEO / engagement come cittadini di prima classe. SSG + isole adattive + routing file-based. Zero dipendenze obbligatorie in runtime.
+**Business-first web framework** — Core Web Vitals as constraints, conversion / SEO / engagement as first-class citizens. SSG + adaptive islands + file-based routing. Zero mandatory runtime dependencies.
 
 [![npm](https://img.shields.io/npm/v/biagiojs)](https://www.npmjs.com/package/biagiojs)
 [![license](https://img.shields.io/npm/l/biagiojs)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org)
 
-Dove gli altri framework chiedono *«come renderizziamo più veloce?»*, biagiojs chiede *«cosa va sul wire prima per massimizzare risultati di business e esperienza utente?»*.
+**[Site](https://biagio.danilosprovieri.com)** · **[Documentation](https://biagio.danilosprovieri.com/docs)** · **[GitHub](https://github.com/Dani2097/biagiojs)**
+
+Where other frameworks ask *“how do we render faster?”*, biagiojs asks *“what should hit the wire first to maximize business outcomes and user experience?”*.
 
 ---
 
-## Indice
+## Table of contents
 
 - [Quick start](#quick-start)
-- [Come funziona](#come-funziona)
-- [Installazione](#installazione)
-- [Comandi](#comandi)
-- [Struttura progetto](#struttura-progetto)
-- [Sintassi](#sintassi)
-- [Funzionalità](#funzionalità)
+- [How it works](#how-it-works)
+- [Installation](#installation)
+- [Commands](#commands)
+- [Project structure](#project-structure)
+- [Syntax](#syntax)
+- [Features](#features)
 - [Deploy](#deploy)
-- [Documentazione](#documentazione)
-- [Licenza](#licenza)
+- [Documentation](#documentation)
+- [License](#license)
 
 ---
 
 ## Quick start
 
 ```bash
-npx create-biagiojs mio-sito
-cd mio-sito && npm install && npm run dev   # → http://localhost:4321
+npx create-biagiojs my-site
+cd my-site && npm install && npm run dev   # → http://localhost:4321
 ```
 
-Produzione:
+Production:
 
 ```bash
-npm run build    # → dist/ (HTML statico + sitemap + immagini ottimizzate)
+npm run build    # → dist/ (static HTML + sitemap + optimized images)
 ```
 
 ---
 
-## Come funziona
+## How it works
 
-Ogni componente dichiara **pesi business** oltre ai costi tecnici. Il framework decide ordine di rendering HTML, piano di idratazione, preload e SEO.
+Every component declares **business weights** alongside technical costs. The framework decides HTML render order, hydration plan, preload and SEO.
 
-| Dichiari | Il framework decide |
-|----------|---------------------|
-| `conversion` (0–1) | Ordine nel sorgente HTML (ciò che converte arriva prima sul wire) |
-| `seo` (0–1) | Contenuto SEO-critical, metrica SCRT |
-| `interaction` (0–1) | Isole **eager** / **lazy** / **static** (JS mai spedito) |
-| `cpu`, `network` (costi) | Priorità = valore/costo; preload ordinato per valore/KB |
+| You declare | Framework decides |
+|-------------|-------------------|
+| `conversion` (0–1) | Order in HTML source (high-converting content hits the wire first) |
+| `seo` (0–1) | SEO-critical content, SCRT metric |
+| `interaction` (0–1) | **eager** / **lazy** / **static** islands (JS never shipped) |
+| `cpu`, `network` (costs) | Priority = value/cost; preload ordered by value/KB |
 
-Un widget chat da 300 KB con `conversion="0.05"` resta HTML statico. Un CTA con `conversion="1"` si idrata per primo.
+A 300 KB chat widget with `conversion="0.05"` stays static HTML. A CTA with `conversion="1"` hydrates first.
 
-**Regola d'oro:** statico è il default desiderabile. In produzione, una pagina senza isole spedisce **zero JavaScript**.
+**Golden rule:** static is the desired default. In production, a page without islands ships **zero JavaScript**.
 
 ---
 
-## Installazione
+## Installation
 
-### Nuovo progetto
+### New project
 
 ```bash
-npx create-biagiojs mio-sito
+npx create-biagiojs my-site
 ```
 
-### Progetto esistente
+### Existing project
 
 ```bash
 npm i biagiojs
 ```
 
-Dipendenze opzionali (consigliate in produzione):
+Optional dependencies (recommended in production):
 
 ```bash
-npm i -D sharp vite          # immagini AVIF/WebP/JPEG + dev con HMR
-npm i -D subset-font         # solo se site.fonts.subset è abilitato
+npm i -D sharp vite          # AVIF/WebP/JPEG images + dev with HMR
+npm i -D subset-font         # only if site.fonts.subset is enabled
 ```
 
-`lightningcss` è optionalDependency del framework: minify CSS reale in build se presente.
+`lightningcss` is an optionalDependency of the framework: real CSS minification in build when present.
 
 ---
 
-## Comandi
+## Commands
 
-| Comando | Descrizione |
+| Command | Description |
 |---------|-------------|
-| `npx biagio dev .` | Dev server (Vite se installato, altrimenti fallback integrato) |
+| `npx biagio dev .` | Dev server (Vite if installed, otherwise built-in fallback) |
 | `npx biagio build .` | Build → `dist/` |
-| `npx biagio build . --clean` | Pulisce `dist/img/` prima della pipeline immagini |
-| `npx biagio build . --dryRun` | Pianifica bucket immagini senza scrivere file |
-| `npx biagio doctor .` | Validazione progetto (config, sharp, pagine, consent) |
-| `npx biagio analyze .` | Report pesi HTML/JS dopo build → `dist/.biagio-analyze.json` |
-| `npx biagio preview . [port]` | Server produzione Node (statico + ISR + SSR, gzip/br) |
+| `npx biagio build . --clean` | Clears `dist/img/` before the image pipeline |
+| `npx biagio build . --dryRun` | Plans image buckets without writing files |
+| `npx biagio doctor .` | Project validation (config, sharp, pages, consent) |
+| `npx biagio analyze .` | Post-build HTML/JS weight report → `dist/.biagio-analyze.json` |
+| `npx biagio preview . [port]` | Node production server (static + ISR + SSR, gzip/br) |
 | `npx biagio pull-vitals <url> .` | CrUX/Lighthouse → `reports/crux.json` |
-| `npx create-biagiojs <dir>` | Scaffolding nuovo sito |
+| `npx create-biagiojs <dir>` | Scaffold a new site |
 
-Config TypeScript: `biagio.config.ts` (richiede esbuild o vite in devDependencies).
+TypeScript config: `biagio.config.ts` (requires esbuild or vite in devDependencies).
 
-Deploy preset: in `biagio.config.js` imposta `site.deploy: 'cloudflare' | 'vercel' | 'netlify'` — alla build genera i file adapter se assenti.
+Deploy presets: set `site.deploy: 'cloudflare' | 'vercel' | 'netlify'` in `biagio.config.js` — generates adapter files at build if missing.
 
 ---
 
-## Struttura progetto
+## Project structure
 
 ```
-mio-sito/
+my-site/
 ├── biagio.config.js       # site, images, fonts, cache, consent, hooks
 ├── pages/
 │   ├── index.page.biagio  # → /
 │   ├── about.page.biagio  # → /about/
 │   └── blog/[slug].page.js
-├── islands/               # moduli client ESM (React, Preact, vanilla)
+├── islands/               # client ESM modules (React, Preact, vanilla)
 ├── content/               # Markdown + frontmatter (collections)
-├── images/                # sorgenti → dist/img/ (sharp)
-├── public/                # copiato in dist/ (favicon, _headers, …)
-├── locales/               # traduzioni (se site.locales)
-├── reports/               # field data per l'optimizer (opzionale)
-└── dist/                  # output build
+├── images/                # sources → dist/img/ (sharp)
+├── public/                # copied to dist/ (favicon, _headers, …)
+├── locales/               # translations (if site.locales)
+├── reports/               # field data for the optimizer (optional)
+└── dist/                  # build output
 ```
 
 ---
 
-## Sintassi
+## Syntax
 
-### `.biagio` (consigliata)
+### `.biagio` (recommended)
 
-`pages/index.page.biagio` → route `/`. Il nome file è la route.
+`pages/index.page.biagio` → route `/`. Filename is the route.
 
 ```html
 <page title="Home" description="…" sitemapPriority="1.0" />
 
 <component id="hero" seo="1" conversion="0.8">
-  <template><section><h1>Benvenuto</h1></section></template>
+  <template><section><h1>Welcome</h1></section></template>
 </component>
 
 <component id="cta" conversion="1" interaction="0.85">
-  <template><button id="buy">Compra — €129</button></template>
+  <template><button id="buy">Buy — €129</button></template>
   <script hydrate>
     el.querySelector('#buy').addEventListener('click', () => { /* … */ });
   </script>
@@ -149,13 +151,13 @@ mio-sito/
 <style>body { margin: 0; font-family: system-ui; }</style>
 ```
 
-- Ordine nel file = ordine **visivo**; ordine di **rendering** = scheduler.
-- `hydrate="inline|eager|visible|idle|never"` override esplicito dello scheduler.
-- `hydrate="inline"` → modulo embedded come data-URI ESM, zero richieste di rete.
+- Order in the file = **visual** order; **render** order = scheduler.
+- `hydrate="inline|eager|visible|idle|never"` explicit scheduler override.
+- `hydrate="inline"` → module embedded as ESM data-URI, zero network requests.
 
 ### `.page.js` / `.page.ts`
 
-Per `getStaticPaths`, `prerender = false`, `revalidate`, logica custom:
+For `getStaticPaths`, `prerender = false`, `revalidate`, custom logic:
 
 ```js
 import { PerfNode, PerformanceGraph } from 'biagiojs/graph';
@@ -178,83 +180,102 @@ export default function ({ props: { post } }) {
 }
 ```
 
-| Export | Effetto |
-|--------|---------|
-| *(default)* | SSG — pagina in `dist/` |
-| `revalidate = N` | ISR — rigenera ogni N secondi |
-| `prerender = false` | SSR on-demand (adapter Node o Vercel) |
+| Export | Effect |
+|--------|--------|
+| *(default)* | SSG — page in `dist/` |
+| `revalidate = N` | ISR — regenerates every N seconds |
+| `prerender = false` | SSR on-demand (Node or Vercel adapter) |
 
 ---
 
-## Funzionalità
+## Features
 
-### SEO, immagini, rete
+### SEO, images, network
 
-- **SEO automatica**: meta, canonical, Open Graph, Twitter, JSON-LD, breadcrumb, `sitemap.xml`, `robots.txt`, favicon, hreflang (multilingua).
-- **Immagini**: `smartImage()` con profili (`hero`, `content`, `thumb`, `full`), `bySlug`, validazione post-build. → **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)**
-- **Rete**: preload/prefetch ordinati per valore/KB con budget (default 200 KB).
+- **Automatic SEO**: meta, canonical, Open Graph, Twitter, JSON-LD, breadcrumb, `sitemap.xml`, `robots.txt`, favicon, hreflang (multilingual).
+- **Images**: `smartImage()` with profiles (`hero`, `content`, `thumb`, `full`), `bySlug`, post-build validation. → **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)**
+- **Network**: preload/prefetch ordered by value/KB with budget (default 200 KB).
 
-### Build e performance (v0.8.x)
+### Build and performance
 
-- **Zero JS** su pagine senza isole interattive.
-- **PurgeCSS + minify** integrati; `lightningcss` opzionale per CSS reale.
-- **Wrapper `<div>` opzionale** su nodi statici (meno byte strutturali).
-- **Runtime compatto**: piano `{e,l}`, IIFE unico, signals condizionali.
-- **Benchmark demo**: HTML prodotto ~**14 KB** (−33% vs baseline naive).
+- **Zero JS** on pages without interactive islands.
+- **PurgeCSS + minify** built-in; optional `lightningcss` for real CSS.
+- **Optional `<div>` wrapper** on static nodes (fewer structural bytes).
+- **Compact runtime**: `{e,l}` plan, single IIFE, conditional signals.
+- **Demo benchmark**: produced HTML ~**14 KB** (−33% vs naive baseline).
 
-### Consent GDPR
+### GDPR consent
 
-Banner native (0 KB critical path) o vendor ottimizzato (Cookiebot/Iubenda). Gating dichiarativo su isole, script e iframe. Consent Mode v2 default-denied.
+Native banner (0 KB critical path) or optimized vendor (Cookiebot/Iubenda). Declarative gating on islands, scripts and iframes. Consent Mode v2 default-denied.
 
 ```js
 site: { consent: { mode: 'native', categories: ['analytics', 'marketing'], policyUrl: '/privacy/' } }
 ```
 
-### i18n, esperimenti, optimizer
+### i18n, experiments, optimizer
 
-- **i18n**: `site.locales` → route `/en/…`, hreflang, sitemap alternate, report per mercato.
-- **A/B test**: assegnazione server-side deterministica, zero CLS.
-- **Optimizer**: `reports/` (CrUX, analytics, heatmap) ricalibrano pesi a ogni build.
+- **i18n**: `site.locales` → `/en/…` routes, hreflang, sitemap alternates, per-market reports.
+- **A/B tests**: deterministic server-side assignment, zero CLS.
+- **Optimizer**: `reports/` (CrUX, analytics, heatmap) recalibrate weights on every build.
 
 ### Dev
 
-- Overlay Core Web Vitals live + metriche business (solo dev).
-- Metriche CFP, FAR, RFI, SCRT, CDI in-page (evento `cvw:metrics`).
+- Live Core Web Vitals overlay + business metrics (dev only).
+- CFP, FAR, RFI, SCRT, CDI metrics in-page (`cvw:metrics` event).
 
 ---
 
 ## Deploy
 
-| Scenario | Soluzione |
-|----------|-----------|
-| Sito statico | `dist/` su Cloudflare Pages, Netlify, Vercel, qualsiasi CDN |
-| Preview locale | `biagio preview .` (adapter Node con compressione) |
+| Scenario | Solution |
+|----------|----------|
+| Static site | `dist/` on Cloudflare Pages, Netlify, Vercel, any CDN |
+| Local preview | `biagio preview .` (Node adapter with compression) |
 | ISR / SSR | `biagiojs/adapters/node`, `biagiojs/adapters/vercel`, `biagiojs/adapters/cloudflare` |
 
-**Preset deploy:** `site.deploy: 'cloudflare'` genera `wrangler.toml` + `functions/[[path]].js`. Analogo per Vercel e Netlify.
+**Deploy presets:** `site.deploy: 'cloudflare'` generates `wrangler.toml` + `functions/[[path]].js`. Same for Vercel and Netlify.
 
-**Cloudflare Pages (SSG):** build `npm run build`, output `dist/`, Node ≥ 18. Cache asset con `site.cache` → **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)**.
+**Cloudflare Pages (SSG):** build `npm run build`, output `dist/`, Node ≥ 18. Asset cache via `site.cache` → **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)**.
 
 ---
 
-## Documentazione
+## Documentation
 
-| Documento | Contenuto |
-|-----------|-----------|
-| **[biagio.danilosprovieri.com](https://biagio.danilosprovieri.com)** | Documentation site (EN default, IT at `/it/`) |
-| **[AI-GUIDE.md](./AI-GUIDE.md)** | Riferimento operativo per agenti AI e sviluppatori |
-| **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)** | Pipeline immagini, profili, `bySlug`, `smartImage()` |
+| Document | Content |
+|----------|---------|
+| **[biagio.danilosprovieri.com](https://biagio.danilosprovieri.com/docs)** | Documentation site (EN default, IT at `/it/`) |
+| **[AI-GUIDE.md](./AI-GUIDE.md)** | Operational reference for AI agents and developers |
+| **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)** | Image pipeline, profiles, `bySlug`, `smartImage()` |
 | **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)** | `_headers`, `! Cache-Control`, Cloudflare / Netlify |
-| **[CHANGELOG.md](./CHANGELOG.md)** | Storico versioni e note di rilascio |
+| **[CHANGELOG.md](./CHANGELOG.md)** | Version history and release notes |
 
 ### Feedback loop
 
 ```
-deploy → utenti reali → pull-vitals + analytics → reports/ → build → pesi ricalibrati → deploy
+deploy → real users → pull-vitals + analytics → reports/ → build → recalibrated weights → deploy
 ```
 
 ---
 
-## Licenza
+## For AI agents
+
+biagiojs is designed for use with coding agents and LLMs.
+
+| Resource | Description |
+|----------|-------------|
+| **[llms.txt](https://biagio.danilosprovieri.com/llms.txt)** | Curated site index ([llmstxt.org](https://llmstxt.org/)) — point your agent here first |
+| **[AI-GUIDE.md](./AI-GUIDE.md)** | Full operational reference (weights, syntax, consent, deploy, pitfalls) |
+| **[Docs: AI agents](https://biagio.danilosprovieri.com/docs/ai-agents/)** | Web summary + workflow |
+
+```bash
+npx create-biagiojs my-site
+# Then read AI-GUIDE.md in node_modules/biagiojs/ or on GitHub
+```
+
+**Golden rule for agents:** static HTML is the default; only hydrate islands with real interaction value. Use the weight tables in AI-GUIDE — do not invent numbers.
+
+---
+
+## License
 
 MIT © [Danilo Sprovieri](https://github.com/Dani2097)

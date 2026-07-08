@@ -33,7 +33,7 @@ test('hreflangLinks: una per lingua + x-default', () => {
 test('seoHead: emette hreflang e og:locale su sito multilingua', () => {
   const h = seoHead(SITE, { path: '/en/p/', basePath: '/p/', locale: 'en', title: 'T', description: 'D' });
   assert.match(h, /hreflang="de"/);
-  assert.match(h, /og:locale" content="en"/);
+  assert.match(h, /og:locale" content="en_US"/);
   assert.match(h, /canonical" href="https:\/\/s\.com\/en\/p\/"/);
 });
 

@@ -81,7 +81,7 @@ export default function ({ site, t, locale, defaultLocale, page }) {
   const g = new PerformanceGraph()
     .add(new PerfNode('nav', {
       seoWeight: 0.3, conversionWeight: 0.2, interactionProbability: 0.4,
-      render: () => topbar({ t, lp: p, langHtml: lang }),
+      render: () => topbar({ t, lp: p, active: 'site', langHtml: lang }),
       hydrate: (el) => {
         el.querySelectorAll('a[href^="/"]').forEach(a => {
           if (a.href.startsWith('http')) return;

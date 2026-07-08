@@ -10,5 +10,5 @@
   <path d="M348 140 L228 340 L308 340 L288 490 L468 290 L358 290 Z" fill="#fff"/>
   <text x="620" y="260" fill="#f1efe9" font-family="ui-monospace,Consolas,monospace" font-size="72" font-weight="700">biagiojs</text>
   <text x="620" y="340" fill="#a8a7b6" font-family="system-ui,sans-serif" font-size="36">Business-first web framework</text>
-  <text x="620" y="420" fill="#8e8d9c" font-family="ui-monospace,Consolas,monospace" font-size="28">SSG · adaptive islands · zero JS default</text>
+  <text x="620" y="420" fill="#8e8d9c" font-family="ui-monospace,Consolas,monospace" font-size="28">SSG - adaptive islands - zero JS default</text>
 </svg>

@@ -4,7 +4,7 @@ export const DOC_SECTIONS = [
   { key: 'syntax', items: ['syntax-biagio', 'syntax-javascript'] },
   { key: 'concepts', items: ['business-weights', 'hydration', 'seo', 'i18n'] },
   { key: 'guides', items: ['images', 'fonts', 'consent', 'optimization', 'deploy', 'cli'] },
-  { key: 'ref', items: ['changelog'] },
+  { key: 'ref', items: ['ai-agents', 'changelog'] },
 ];
 
 export const ALL_DOC_SLUGS = DOC_SECTIONS.flatMap(s => s.items);

@@ -25,7 +25,9 @@
     "directory": "biagiojs"
   },
   "homepage": "https://github.com/Dani2097/biagiojs#readme",
-  "bugs": { "url": "https://github.com/Dani2097/biagiojs/issues" },
+  "bugs": {
+    "url": "https://github.com/Dani2097/biagiojs/issues"
+  },
   "exports": {
     ".": "./src/ssr.js",
     "./graph": "./src/core/graph.js",
@@ -60,15 +62,15 @@
     "bench": "node bench/benchmark.js"
   },
   "optionalDependencies": {
+    "lightningcss": "^1.27.0",
     "sharp": "^0.33.0",
-    "subset-font": "^2.3.0",
-    "lightningcss": "^1.27.0"
+    "subset-font": "^2.3.0"
   },
   "devDependencies": {
-    "vite": "^6.0.0",
-    "sharp": "^0.33.0",
+    "lightningcss": "^1.27.0",
+    "sharp": "^0.33.5",
     "subset-font": "^2.3.0",
-    "lightningcss": "^1.27.0"
+    "vite": "^6.0.0"
   },
   "engines": {
     "node": ">=18"

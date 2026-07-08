@@ -5,6 +5,7 @@
     "demo": "demo",
     "github": "github",
     "home": "home",
+    "site": "site",
     "sections": {
       "start": "Start",
       "syntax": "Syntax",
@@ -27,6 +28,7 @@
       "optimization": "Optimization loop",
       "deploy": "Deploy & cache",
       "cli": "CLI",
+      "ai-agents": "AI agents",
       "changelog": "Changelog"
     },
     "desc": {
@@ -44,6 +46,7 @@
       "optimization": "CrUX, reports, A/B tests",
       "deploy": "CDN, presets, headers",
       "cli": "build, dev, doctor, analyze",
+      "ai-agents": "llms.txt, AI-GUIDE, agent workflow",
       "changelog": "release notes"
     }
   },

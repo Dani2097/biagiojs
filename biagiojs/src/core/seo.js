@@ -116,7 +116,9 @@ function buildJsonLd(site, page, url) {
       ...(page.locale ? { inLanguage: page.locale } : {}),
       ...(a.section ? { articleSection: a.section } : {}),
       ...(a.keywords ? { keywords: a.keywords } : {}),
-      ...(page.image ? { image: absUrl(site, typeof page.image === 'string' ? page.image : page.image.src) } : {}),
+      ...(page.image || site.ogImage
+        ? { image: absUrl(site, typeof (page.image || site.ogImage) === 'string' ? (page.image || site.ogImage) : (page.image || site.ogImage).src) }
+        : {}),
     });
   }
 
@@ -137,16 +139,23 @@ function buildJsonLd(site, page, url) {
   return ld;
 }
 
+function ogLocale(locale) {
+  if (!locale) return null;
+  const map = { en: 'en_US', it: 'it_IT', de: 'de_DE', fr: 'fr_FR', es: 'es_ES' };
+  return map[locale] || locale;
+}
+
 /** Head tags for one page. */
 export function seoHead(site, page) {
   const url = absUrl(site, page.path);
   const desc = page.description || site.description || '';
+  const ogLoc = ogLocale(page.locale);
   const tags = [
     ...(site.locales?.length && page.basePath ? [hreflangLinks(site, page.basePath)] : []),
-    ...(page.locale ? [`<meta property="og:locale" content="${esc(page.locale)}">`] : []),
+    ...(ogLoc ? [`<meta property="og:locale" content="${esc(ogLoc)}">`] : []),
     ...(site.locales?.length && page.locale
       ? site.locales.filter(l => l !== page.locale).map(l =>
-          `<meta property="og:locale:alternate" content="${esc(l)}">`)
+          `<meta property="og:locale:alternate" content="${esc(ogLocale(l) || l)}">`)
       : []),
     ...faviconTags(site.favicon),
     `<meta name="description" content="${esc(desc)}">`,

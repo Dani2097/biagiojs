@@ -1,0 +1,54 @@
+# biagiojs
+
+> biagiojs is a business-first web framework for static sites and adaptive islands. It orders HTML render, hydration and preload from business weights (conversion, SEO, interaction) instead of shipping JavaScript by default. SSG, file-based routing, built-in SEO, i18n, GDPR consent, image pipeline, and a CrUX-driven optimization loop.
+
+Official site: https://biagio.danilosprovieri.com
+Default locale: English (`/it/` for Italian).
+Package: `npm i biagiojs` · Scaffold: `npx create-biagiojs my-site`
+
+Important notes:
+- Pages without interactive islands ship **zero JavaScript** in production.
+- Declare weights on `<component>` in `.biagio` files or `PerfNode` in `.page.js`.
+- Hydration buckets: **eager**, **lazy**, **static** (default). Thresholds adapt from CrUX field data in `reports/`.
+- Config: `biagio.config.js` or `biagio.config.ts` — `site.baseUrl`, `site.locales`, `site.consent`, `site.fonts`, `site.images`.
+
+## Start
+
+- [Getting started](https://biagio.danilosprovieri.com/docs/getting-started/): install, first build, `biagio.config.js`
+- [Project structure](https://biagio.danilosprovieri.com/docs/project-structure/): `pages/`, `islands/`, `content/`, routing conventions
+
+## Syntax
+
+- [.biagio files](https://biagio.danilosprovieri.com/docs/syntax-biagio/): declarative pages, business weights, inline hydration
+- [JavaScript & TypeScript](https://biagio.danilosprovieri.com/docs/syntax-javascript/): `PerformanceGraph`, `getStaticPaths`, `getCollection`, SSR/ISR
+
+## Concepts
+
+- [Business weights](https://biagio.danilosprovieri.com/docs/business-weights/): conversion, seo, interaction, cpu/network costs
+- [Adaptive hydration](https://biagio.danilosprovieri.com/docs/hydration/): eager / lazy / static, overrides, consent gating
+- [Automatic SEO](https://biagio.danilosprovieri.com/docs/seo/): canonical, Open Graph, JSON-LD, sitemap, hreflang
+- [Internationalization](https://biagio.danilosprovieri.com/docs/i18n/): `site.locales`, `locales/*.json`, per-market reports
+
+## Guides
+
+- [Images](https://biagio.danilosprovieri.com/docs/images/): sharp pipeline, `smartImage()`, profiles, `bySlug`
+- [Fonts](https://biagio.danilosprovieri.com/docs/fonts/): self-hosted Google Fonts, preload, subsetting
+- [Consent & cookies](https://biagio.danilosprovieri.com/docs/consent/): native banner, Cookiebot/Iubenda, Consent Mode v2
+- [Optimization loop](https://biagio.danilosprovieri.com/docs/optimization/): `reports/`, `pull-vitals`, A/B experiments
+- [Deploy & cache](https://biagio.danilosprovieri.com/docs/deploy/): CDN presets, `_headers`, Cloudflare/Vercel/Netlify
+## Reference
+
+- [AI agents](https://biagio.danilosprovieri.com/docs/ai-agents/): llms.txt, AI-GUIDE, workflow and weight tables for LLMs
+- [CLI](https://biagio.danilosprovieri.com/docs/cli/): `dev`, `build`, `doctor`, `analyze`, `preview`
+
+## Italian (IT)
+
+Same docs under `/it/docs/…` — e.g. [Per cominciare](https://biagio.danilosprovieri.com/it/docs/getting-started/).
+
+## Optional
+
+- [Changelog](https://biagio.danilosprovieri.com/docs/changelog/): release notes (v0.10.0)
+- [GitHub repository](https://github.com/Dani2097/biagiojs): source, issues, AI-GUIDE.md, IMAGE-OPTIMIZATION.md
+- [npm package](https://www.npmjs.com/package/biagiojs): `biagiojs` and `create-biagiojs`
+- [Sitemap](https://biagio.danilosprovieri.com/sitemap.xml): all indexable URLs with hreflang alternates
+- [robots.txt](https://biagio.danilosprovieri.com/robots.txt): crawl rules
