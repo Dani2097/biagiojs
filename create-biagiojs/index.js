@@ -33,7 +33,7 @@ writeFileSync(join(root, 'package.json'), JSON.stringify({
     analyze: 'biagio analyze .',
     'pull-vitals': 'biagio pull-vitals',
   },
-  dependencies: { 'biagiojs': '^0.10.0' },
+  dependencies: { 'biagiojs': '^0.10.1' },
   devDependencies: { vite: '^6.0.0', sharp: '^0.33.0' },
 }, null, 2) + '\n');
 

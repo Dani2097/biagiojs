@@ -51,45 +51,45 @@
     }
   },
   "hero": {
-    "badge": "runtime a zero dipendenze",
-    "title": "Cosa arriva prima sul wire è una scelta di business.",
-    "lead": "biagiojs ordina HTML, idratazione e preload dai pesi che dichiari — conversion, SEO, interaction, costo. Le pagine senza isole spediscono zero JavaScript.",
+    "badge": "leggero di default",
+    "title": "Il tuo bottone «Compra» non dovrebbe aspettare dietro una chat.",
+    "lead": "Segni ogni blocco con quanto conta — per le vendite, per Google, per i click — e biagiojs decide cosa arriva prima sul wire, cosa si idrata e cosa resta HTML puro. Nessuna isola nella pagina? Zero JavaScript, punto.",
     "cmd": "npx create-biagiojs mio-sito",
-    "linkDocs": "Leggi la docs",
-    "schedNote": "ordine di render · valore ÷ costo"
+    "linkDocs": "Leggi la documentazione",
+    "schedNote": "ordine reale di render dai tuoi pesi"
   },
   "scores": {
-    "eyebrow": "Misurato",
-    "title": "Questa pagina, auditata",
-    "lead": "Google Lighthouse su questo sito — mobile su 4G limitata, desktop emulato. Un'isola; tutto il resto HTML statico.",
+    "eyebrow": "Numeri veri, non slogan",
+    "title": "Abbiamo misurato proprio questa pagina",
+    "lead": "Google Lighthouse sul sito che stai guardando — mobile su 4G limitata, desktop emulato. Un'isola piccola; tutto il resto è HTML statico. I punteggi parlano da soli.",
     "mobile": "Mobile",
     "desktop": "Desktop",
     "note": "Lighthouse 13 · luglio 2026 · biagio.danilosprovieri.com"
   },
   "band": {
-    "a": "0 KB JS default",
-    "b": "14 KB HTML demo",
-    "c": "AVIF · WebP · JPEG",
-    "d": "Node · Vercel · Cloudflare"
+    "a": "zero JS finché non lo meriti",
+    "b": "~14 KB di HTML qui",
+    "c": "AVIF, WebP e JPEG inclusi",
+    "d": "Node, Vercel o Cloudflare"
   },
   "spec": {
-    "eyebrow": "Capacità",
-    "heading": "Cosa fa",
-    "scheduler": { "title": "Scheduler", "text": "Priorità di render = valore business ÷ costo CPU. I nodi ad alta conversione salgono nel sorgente HTML." },
-    "islands": { "title": "Isole", "text": "Idrata eager, lazy o mai. Un widget chat da 300 KB con conversion 0.05 resta statico." },
-    "seo": { "title": "SEO", "text": "Canonical, Open Graph, JSON-LD, sitemap, hreflang — generati alla build." },
-    "images": { "title": "Immagini", "text": "AVIF/WebP/JPEG via sharp. Profili, validazione srcset, sorgenti remote." },
-    "ssg": { "title": "SSG + adapter", "text": "Statico di default. Adapter Node, Vercel, Cloudflare per SSR/ISR quando serve." }
+    "eyebrow": "Sotto il cofano",
+    "heading": "Le cose noiose, già fatte",
+    "scheduler": { "title": "Scheduler", "text": "Le sezioni che contano salgono nel sorgente HTML prima dei widget pesanti. Tu dichiari i pesi; la build rimette le carte in ordine." },
+    "islands": { "title": "Isole", "text": "Idrata subito, più tardi o mai. Una chat da 300 KB a bassa conversion resta statica — il checkout non aspetta lei." },
+    "seo": { "title": "SEO", "text": "Canonical, Open Graph, JSON-LD, sitemap e hreflang — generati in build, non aggiunti a posteriori." },
+    "images": { "title": "Immagini", "text": "AVIF, WebP e JPEG responsive con sharp. Profili sensati, override per immagine e un controllo se citi un file che non c'è." },
+    "ssg": { "title": "SSG + adapter", "text": "Siti statici di default. Quando serve SSR o ISR, gli adapter per Node, Vercel e Cloudflare sono a un passo di config." }
   },
   "demo": {
-    "eyebrow": "Playground",
-    "title": "Prova lo scheduler",
-    "lead": "Un'isola su questa pagina. Muovi i cursori — il piano di idratazione scorre in tempo reale tra static, lazy ed eager.",
+    "eyebrow": "Provalo tu",
+    "title": "Muovi i cursori — il piano cambia sotto i tuoi occhi",
+    "lead": "Su questa pagina c'è un'isola sola. Trascina conversion e interaction: l'idratazione passa in tempo reale tra static, lazy ed eager. Niente reload, niente supposizioni.",
     "conv": "conversion",
     "inter": "interaction",
     "cpu": "cpu cost",
-    "goldenText": "Statico è il default. Ogni hydrate deve avere una ragione.",
-    "goldenHint": "Soglie: eager ≥ 0.3 · lazy ≥ 0.05 · sotto = niente JS.",
+    "goldenText": "Partiamo dallo statico. Il JavaScript si guadagna, non lo spargiamo per default.",
+    "goldenHint": "Regola pratica: eager da ~0.3, lazy da ~0.05 — sotto quella soglia, la pagina resta senza JS.",
     "outStatic": "static",
     "outEager": "eager",
     "outLazy": "lazy",
@@ -97,24 +97,24 @@
     "outRender": "render"
   },
   "code": {
-    "eyebrow": "Sintassi",
-    "title": "Dichiari pesi, non lifecycle"
+    "eyebrow": "In un file vero",
+    "title": "Dici cosa conta — la build fa il resto"
   },
   "why": {
-    "eyebrow": "Principi",
-    "title": "Tre idee, un framework",
-    "a": { "title": "Statico è il default", "text": "Una pagina spedisce zero JavaScript finché qualcosa non si guadagna l'idratazione. La via veloce è quella da cui non devi uscire." },
-    "b": { "title": "Decidono i pesi business", "text": "Conversion, SEO e interaction sono input della build, non ripensamenti. Lo scheduler li trasforma in ordine sorgente e piano di idratazione." },
-    "c": { "title": "Il campo chiude il cerchio", "text": "Report reali di CrUX, analytics e heatmap ricalibrano i pesi a ogni build — il sito si tara su come lo usano davvero le persone." }
+    "eyebrow": "Come pensiamo il web",
+    "title": "Veloce di default, mirato quando serve",
+    "a": { "title": "Lo statico è la strada comoda", "text": "La maggior parte delle pagine non ha bisogno di JavaScript lato client. biagiojs lo assume finché un componente non dimostra il contrario — la via veloce non è qualcosa per cui devi combattere." },
+    "b": { "title": "Il business guida la build", "text": "Conversion, SEO e interaction non sono metriche da rincorrere dopo il lancio. Sono input: lo scheduler li trasforma in ordine nel sorgente e in un piano di idratazione che puoi capire." },
+    "c": { "title": "L'uso reale alimenta la build successiva", "text": "CrUX, analytics e heatmap finiscono in reports/ e spostano i pesi nel tempo — il sito impara come le persone lo usano davvero, non come avevamo immaginato." }
   },
   "cta": {
-    "title": "Spedisci la via veloce di default",
-    "text": "Genera un progetto, dichiara qualche peso e lascia che sia la build a decidere cosa va prima sul wire.",
+    "title": "Un comando e hai il progetto",
+    "text": "Aggiungi qualche peso ai componenti, lancia la build e guarda cosa arriva prima sul wire. In pochi minuti capisci se il modello fa al caso tuo.",
     "start": "Inizia ora",
-    "docs": "Vai alla docs"
+    "docs": "Sfoglia la docs"
   },
   "footer": {
-    "line": "costruito con biagiojs — questo sito è l'output di biagio build docs"
+    "line": "costruito con biagiojs — stai guardando l'output di biagio build docs"
   },
   "docsIndex": {
     "title": "Documentazione",
@@ -123,8 +123,8 @@
   },
   "breadcrumb": { "docs": "docs" },
   "meta": {
-    "homeTitle": "biagiojs — framework web business-first",
-    "homeDesc": "Spedisci meno JavaScript. biagiojs ordina HTML, idratazione e preload dai pesi business — conversion, SEO, interaction. SSG, isole adattive, SEO integrata.",
+    "homeTitle": "biagiojs — metti prima ciò che conta sul web",
+    "homeDesc": "Un framework business-first per siti veloci che devono convertire. Dichiari i pesi; biagiojs ordina HTML, idratazione e preload. Statico di default, isole quando le meritano.",
     "docsTitle": "Documentazione — biagiojs",
     "docsDesc": "Guide e riferimento per biagiojs: per cominciare, sintassi .biagio, pesi business, idratazione adattiva, SEO automatica, immagini, deploy e CLI."
   }

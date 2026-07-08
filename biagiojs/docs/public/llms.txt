@@ -47,7 +47,7 @@ Same docs under `/it/docs/…` — e.g. [Per cominciare](https://biagio.danilosp
 
 ## Optional
 
-- [Changelog](https://biagio.danilosprovieri.com/docs/changelog/): release notes (v0.10.0)
+- [Changelog](https://biagio.danilosprovieri.com/docs/changelog/): release notes (v0.10.1)
 - [GitHub repository](https://github.com/Dani2097/biagiojs): source, issues, AI-GUIDE.md, IMAGE-OPTIMIZATION.md
 - [npm package](https://www.npmjs.com/package/biagiojs): `biagiojs` and `create-biagiojs`
 - [Sitemap](https://biagio.danilosprovieri.com/sitemap.xml): all indexable URLs with hreflang alternates

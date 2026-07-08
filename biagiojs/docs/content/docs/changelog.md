@@ -3,10 +3,23 @@ title: Changelog
 description: biagiojs release history.
 order: 11
 priority: 0.5
-lastmod: 2026-07-07
+lastmod: 2026-07-08
 ---
 
 # Changelog
+
+## 0.10.1 — 2026-07-08
+
+### Fixed
+
+- SEO: `og:locale` per locale (`en_US` / `it_IT`), `hideBreadcrumb`, TechArticle image fallback
+
+### Documentation
+
+- `/llms.txt`, `/docs/ai-agents/`, mobile docs nav (accordion), `og.png`, GSC verification
+- npm README: «For AI agents» section
+
+---
 
 ## 0.10.0 — 2026-07-07
 
@@ -20,15 +33,6 @@ lastmod: 2026-07-07
 - `biagio.config.ts` and `biagiojs/types`
 - Documentation site (`biagiojs/docs/`) — bilingual EN/IT with native i18n
 - Markdown parser: code fences and tables
-
-### Documentation site (ongoing)
-
-- Guides: fonts, consent, i18n, optimization loop
-- `/llms.txt` and `/docs/ai-agents/` for LLM agents
-- SEO: `og.png`, `og:locale` (`en_US`/`it_IT`), TechArticle image fallback, `hideBreadcrumb`
-- Google Search Console verification file
-- Mobile docs nav: collapsible sections (accordion)
-- Responsive topbar, English READMEs, site link in navbar
 
 ---
 

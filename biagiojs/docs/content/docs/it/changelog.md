@@ -3,10 +3,23 @@ title: Changelog
 description: Storico versioni biagiojs.
 order: 11
 priority: 0.5
-lastmod: 2026-07-07
+lastmod: 2026-07-08
 ---
 
 # Changelog
+
+## 0.10.1 — 2026-07-08
+
+### Corretto
+
+- SEO: `og:locale` (`en_US` / `it_IT`), `hideBreadcrumb`, fallback immagine TechArticle
+
+### Documentazione
+
+- `/llms.txt`, `/docs/ai-agents/`, nav mobile docs (accordion), `og.png`, verifica GSC
+- README npm: sezione «For AI agents»
+
+---
 
 ## 0.10.0 — 2026-07-07
 
@@ -22,14 +35,6 @@ lastmod: 2026-07-07
 - `biagio.config.ts` e tipi in `biagiojs/types`
 - Sito documentazione (questo sito)
 - Parser Markdown: blocchi codice e tabelle
-
-### Sito docs (aggiornamenti)
-
-- Guide: font, consent, i18n, optimization loop
-- `/llms.txt` e `/docs/ai-agents/` per agenti LLM
-- SEO: `og.png`, `og:locale` (`en_US`/`it_IT`), `hideBreadcrumb`
-- Nav mobile docs: sezioni accordion
-- README in inglese, link sito in navbar
 
 ---
 

@@ -28,7 +28,7 @@ test('package.json: nome npm, bin CLI, versione e lockfile', () => {
   assert.equal(pkg.name, 'biagiojs');
   assert.equal(pkg.bin.biagio, 'src/cli.js');
   assert.equal(pkg.bin['create-biagiojs'], 'src/create-biagiojs.js');
-  assert.equal(pkg.version, '0.10.0');
+  assert.equal(pkg.version, '0.10.1');
   const lock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
   assert.equal(lock.version, pkg.version, 'package-lock.json version deve coincidere con package.json');
   assert.equal(lock.packages[''].name, 'biagiojs', 'package-lock root name deve essere biagiojs');
@@ -79,7 +79,7 @@ test('font subset: scan include testo da pages/*.page.biagio', () => {
 
 test('create-biagiojs scaffold standalone: dipende da biagiojs', () => {
   const scaffold = read('../create-biagiojs/index.js');
-  assert.match(scaffold, /'biagiojs': '\^0\.10\.0'/);
+  assert.match(scaffold, /'biagiojs': '\^0\.10\.1'/);
   assert.match(scaffold, /biagio\.config\.js/);
   assert.match(scaffold, /index\.page\.biagio/);
   assert.doesNotMatch(scaffold, /cvw-first|cvw\.config/);

@@ -10,6 +10,23 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/). Versioning [S
 
 ---
 
+## [0.10.1] — 2026-07-08
+
+### Corretto
+
+- **SEO** — `og:locale` per locale (`en_US` / `it_IT`), `page.hideBreadcrumb` per evitare doppio breadcrumb in JSON-LD, fallback immagine su `TechArticle`
+
+### Documentazione
+
+- Sito docs: `/llms.txt`, pagina AI agents, nav mobile a sezioni accordion, `og.png`, verifica Google Search Console
+- README npm: sezione «For AI agents»
+
+### Modificato
+
+- Scaffold e `create-biagiojs` aggiornati a `^0.10.1`
+
+---
+
 ## [0.10.0] — 2026-07-07
 
 ### Aggiunto

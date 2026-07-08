@@ -1,6 +1,6 @@
 {
   "name": "create-biagiojs",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Scaffolding per siti biagiojs: npx create-biagiojs mio-sito",
   "type": "module",
   "bin": { "create-biagiojs": "./index.js" },

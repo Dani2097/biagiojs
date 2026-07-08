@@ -51,45 +51,45 @@
     }
   },
   "hero": {
-    "badge": "zero-dependency runtime",
-    "title": "What loads first is a business decision.",
-    "lead": "biagiojs orders HTML, hydration and preload from weights you declare — conversion, SEO, interaction, cost. Pages without islands ship zero JavaScript.",
+    "badge": "ships light, stays fast",
+    "title": "Your CTA shouldn't wait behind a chat widget.",
+    "lead": "Tag each block with how much it matters — for sales, search, or clicks — and biagiojs decides what hits the wire first, what hydrates, and what stays plain HTML. No islands on a page? That's zero JavaScript, full stop.",
     "cmd": "npx create-biagiojs my-site",
     "linkDocs": "Read the docs",
-    "schedNote": "render order · value ÷ cost"
+    "schedNote": "real build order from your weights"
   },
   "scores": {
-    "eyebrow": "Measured",
-    "title": "This page, audited",
-    "lead": "Google Lighthouse on this site — mobile on throttled 4G, desktop emulated. One island; everything else static HTML.",
+    "eyebrow": "Proof, not promises",
+    "title": "We audited this exact page",
+    "lead": "Google Lighthouse on the site you're looking at — mobile on throttled 4G, desktop emulated. One small island; the rest is static HTML. The numbers speak for themselves.",
     "mobile": "Mobile",
     "desktop": "Desktop",
     "note": "Lighthouse 13 · July 2026 · biagio.danilosprovieri.com"
   },
   "band": {
-    "a": "0 KB JS default",
-    "b": "14 KB demo HTML",
-    "c": "AVIF · WebP · JPEG",
-    "d": "Node · Vercel · Cloudflare"
+    "a": "zero JS unless you earn it",
+    "b": "~14 KB HTML on this page",
+    "c": "AVIF, WebP & JPEG out of the box",
+    "d": "Node, Vercel or Cloudflare"
   },
   "spec": {
-    "eyebrow": "Capabilities",
-    "heading": "What it does",
-    "scheduler": { "title": "Scheduler", "text": "Render priority = business value ÷ CPU cost. High-conversion nodes move up in the HTML source." },
-    "islands": { "title": "Islands", "text": "Hydrate eager, lazy, or never. A 300 KB chat widget at conversion 0.05 stays static." },
-    "seo": { "title": "SEO", "text": "Canonical, Open Graph, JSON-LD, sitemap, hreflang — generated at build time." },
-    "images": { "title": "Images", "text": "AVIF/WebP/JPEG via sharp. Profiles, srcset validation, remote sources." },
-    "ssg": { "title": "SSG + adapters", "text": "Static by default. Node, Vercel, Cloudflare adapters for SSR/ISR when you need them." }
+    "eyebrow": "Under the hood",
+    "heading": "The boring stuff, already solved",
+    "scheduler": { "title": "Scheduler", "text": "High-value sections climb the HTML source before heavy widgets. You declare what matters; the build reshuffles the deck." },
+    "islands": { "title": "Islands", "text": "Hydrate now, later, or never. A 300 KB chat bubble at low conversion stays static — your checkout doesn't wait for it." },
+    "seo": { "title": "SEO", "text": "Canonical URLs, Open Graph, JSON-LD, sitemap and hreflang — generated at build time, not bolted on later." },
+    "images": { "title": "Images", "text": "Responsive AVIF, WebP and JPEG via sharp. Sensible defaults, per-image profiles, and a guardrail if you reference a file that doesn't exist." },
+    "ssg": { "title": "SSG + adapters", "text": "Static sites by default. When you need SSR or ISR, adapters for Node, Vercel and Cloudflare are a config away." }
   },
   "demo": {
-    "eyebrow": "Playground",
-    "title": "Feel the scheduler",
-    "lead": "One island on this page. Drag the sliders — the hydration plan moves live between static, lazy and eager.",
+    "eyebrow": "Try it yourself",
+    "title": "Move the sliders — watch the plan shift",
+    "lead": "There's one island on this page. Drag conversion and interaction: hydration moves live between static, lazy and eager. No reload, no guesswork.",
     "conv": "conversion",
     "inter": "interaction",
     "cpu": "cpu cost",
-    "goldenText": "Static is the default. Every hydrate needs a reason.",
-    "goldenHint": "Thresholds: eager ≥ 0.3 · lazy ≥ 0.05 · below = no JS.",
+    "goldenText": "Static is where we start. JavaScript is something you earn, not something we sprinkle by default.",
+    "goldenHint": "Rule of thumb: eager from ~0.3, lazy from ~0.05 — below that, the page stays JS-free.",
     "outStatic": "static",
     "outEager": "eager",
     "outLazy": "lazy",
@@ -97,24 +97,24 @@
     "outRender": "render"
   },
   "code": {
-    "eyebrow": "Syntax",
-    "title": "Declare weights, not lifecycles"
+    "eyebrow": "In a real file",
+    "title": "Say what matters — the build does the rest"
   },
   "why": {
-    "eyebrow": "Principles",
-    "title": "Three ideas, one framework",
-    "a": { "title": "Static is the default", "text": "A page ships zero JavaScript until something on it earns hydration. The fast path is the one you don't opt out of." },
-    "b": { "title": "Business weights decide", "text": "Conversion, SEO and interaction are inputs to the build, not afterthoughts. The scheduler turns them into source order and a hydration plan." },
-    "c": { "title": "Field data closes the loop", "text": "Real CrUX, analytics and heatmap reports recalibrate the weights on every build — the site tunes itself to how people actually use it." }
+    "eyebrow": "How we think about the web",
+    "title": "Fast by default, deliberate when it counts",
+    "a": { "title": "Static is the happy path", "text": "Most pages don't need client JavaScript. biagiojs assumes that until a component proves otherwise — so the fast case isn't something you have to fight for." },
+    "b": { "title": "Business context drives the build", "text": "Conversion, SEO and interaction aren't metrics you chase after launch. They're inputs: the scheduler turns them into source order and a hydration plan you can reason about." },
+    "c": { "title": "Real usage feeds the next build", "text": "CrUX field data, analytics and heatmaps land in reports/ and nudge the weights over time — the site learns how people actually use it, not how we guessed they would." }
   },
   "cta": {
-    "title": "Ship the fast path by default",
-    "text": "Scaffold a project, declare a few weights, and let the build decide what goes on the wire first.",
+    "title": "Scaffold a project in one command",
+    "text": "Add a few weights to your components, run the build, and see what lands first on the wire. You'll know in minutes if the model fits your site.",
     "start": "Get started",
     "docs": "Browse docs"
   },
   "footer": {
-    "line": "built with biagiojs — this site is the output of biagio build docs"
+    "line": "built with biagiojs — you're looking at the output of biagio build docs"
   },
   "docsIndex": {
     "title": "Documentation",
@@ -123,8 +123,8 @@
   },
   "breadcrumb": { "docs": "docs" },
   "meta": {
-    "homeTitle": "biagiojs — business-first web framework",
-    "homeDesc": "Ship less JavaScript. biagiojs orders HTML, hydration and preload from business weights — conversion, SEO, interaction. SSG, adaptive islands, built-in SEO.",
+    "homeTitle": "biagiojs — put what matters first on the web",
+    "homeDesc": "A business-first framework for sites that should load fast and convert. You declare weights; biagiojs orders HTML, hydration and preload. Static by default, islands when they earn it.",
     "docsTitle": "Documentation — biagiojs",
     "docsDesc": "Guides and reference for biagiojs: getting started, .biagio syntax, business weights, adaptive hydration, automatic SEO, images, deploy and CLI."
   }
