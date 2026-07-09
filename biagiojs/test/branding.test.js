@@ -28,7 +28,7 @@ test('package.json: nome npm, bin CLI, versione e lockfile', () => {
   assert.equal(pkg.name, 'biagiojs');
   assert.equal(pkg.bin.biagio, 'src/cli.js');
   assert.equal(pkg.bin['create-biagiojs'], 'src/create-biagiojs.js');
-  assert.equal(pkg.version, '0.10.2');
+  assert.equal(pkg.version, '0.10.5');
   const lock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
   assert.equal(lock.version, pkg.version, 'package-lock.json version deve coincidere con package.json');
   assert.equal(lock.packages[''].name, 'biagiojs', 'package-lock root name deve essere biagiojs');
@@ -128,6 +128,8 @@ test('runtime interno: API legacy cvw ancora presenti (breaking se rimosse)', ()
   const hydration = read('src/core/hydration.js');
   assert.match(hydration, /__CVW_PLAN__/);
   assert.match(hydration, /data-cvw-id/);
+  assert.match(hydration, /timeout:\s*1500/);
+  assert.match(hydration, /setTimeout\(cb,\s*1500\)/);
   const signals = read('src/core/signals.js');
   assert.match(signals, /window\.cvw/);
 });

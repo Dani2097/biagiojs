@@ -34,6 +34,7 @@ Important notes:
 
 - [Images](https://biagio.danilosprovieri.com/docs/images/): sharp pipeline, `smartImage()`, profiles, `bySlug`
 - [Fonts](https://biagio.danilosprovieri.com/docs/fonts/): self-hosted Google Fonts, preload, subsetting
+- [Critical CSS](https://biagio.danilosprovieri.com/docs/critical-css/): hooks.head, inline styles, per-page purge, defer non-critical CSS
 - [Consent & cookies](https://biagio.danilosprovieri.com/docs/consent/): native banner, Cookiebot/Iubenda, Consent Mode v2
 - [Optimization loop](https://biagio.danilosprovieri.com/docs/optimization/): `reports/`, `pull-vitals`, A/B experiments
 - [Deploy & cache](https://biagio.danilosprovieri.com/docs/deploy/): CDN presets, `_headers`, Cloudflare/Vercel/Netlify

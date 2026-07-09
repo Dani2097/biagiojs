@@ -12,6 +12,7 @@ import { loadReports, optimize } from './core/optimizer.js';
 import { ExperimentEngine } from './core/experiments.js';
 import { getCollection, preloadContentSchemas } from './core/content.js';
 import { loadBiagioFile } from './compiler.js';
+import { loadConfig } from './core/config.js';
 import { loadLocale, makeT, localePath, splitLocaleFromUrl } from './core/i18n.js';
 
 function walkPages(dir, base = dir) {
@@ -55,8 +56,8 @@ export async function renderRequest(root, url, { loadModule, request = {}, userI
   root = resolve(root);
   await preloadContentSchemas(root);
   const load = loadModule || (id => import(pathToFileURL(id).href + (dev ? '?t=' + Date.now() : '')));
-  const configPath = join(root, 'biagio.config.js');
-  const site = existsSync(configPath) ? (await load(configPath)).default.site : { name: 'biagiojs Site', baseUrl: 'https://example.com' };
+  const config = await loadConfig(root);
+  const site = config.site;
 
   // i18n: stacca l'eventuale prefisso lingua dall'URL
   const defaultLocale = site.defaultLocale || site.locales?.[0] || null;
@@ -91,10 +92,17 @@ export async function renderRequest(root, url, { loadModule, request = {}, userI
   const def = await mod.default(ctx);
   const { graph, page, assets = [], experiments = null, head = '', overlay = dev } = def;
   const { thresholds } = optimize(graph, reports);
+
+  let pageHead = head;
+  if (config.hooks?.head) {
+    const extra = await config.hooks.head({ root, page, locale, site, config, ctx });
+    if (extra) pageHead = head + (typeof extra === 'string' ? extra : '');
+  }
+
   // ISR: la pagina può dichiarare `export const revalidate = 60` (secondi)
   meta.revalidate = typeof mod.revalidate === 'number' ? mod.revalidate : null;
   page.basePath = page.basePath || urlPath;
   page.locale = locale || undefined;
   page.path = page.path || localePath(page.basePath, locale, defaultLocale);
-  return await renderPage(graph, { title: page.title, head, overlay, site, page, assets, experiments, thresholds });
+  return await renderPage(graph, { title: page.title, head: pageHead, overlay, site, page, assets, experiments, thresholds });
 }

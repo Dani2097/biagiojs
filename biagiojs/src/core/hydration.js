@@ -50,7 +50,11 @@ export const HYDRATION_RUNTIME = `
     const el = document.querySelector('[data-cvw-id="' + id + '"]');
     if (el) io.observe(el);
   }
-  (window.requestIdleCallback || (cb => setTimeout(cb, 2000)))(() => {
+  const scheduleIdle = function (cb) {
+    if (window.requestIdleCallback) return window.requestIdleCallback(cb, { timeout: 1500 });
+    return setTimeout(cb, 1500);
+  };
+  scheduleIdle(() => {
     for (const id of lazy) hydrate(id);
   });
 })();

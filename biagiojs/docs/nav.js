@@ -3,7 +3,7 @@ export const DOC_SECTIONS = [
   { key: 'start', items: ['getting-started', 'project-structure'] },
   { key: 'syntax', items: ['syntax-biagio', 'syntax-javascript', 'content-collections'] },
   { key: 'concepts', items: ['business-weights', 'hydration', 'seo', 'i18n'] },
-  { key: 'guides', items: ['images', 'fonts', 'consent', 'optimization', 'deploy', 'cli'] },
+  { key: 'guides', items: ['images', 'fonts', 'critical-css', 'consent', 'optimization', 'deploy', 'cli'] },
   { key: 'ref', items: ['ai-agents', 'changelog'] },
 ];
 

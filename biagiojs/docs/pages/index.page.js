@@ -97,7 +97,7 @@ export default function ({ site, t, locale, defaultLocale, page }) {
       seoWeight: 1, conversionWeight: 0.9, cpuCost: 2,
       render: () => `<div class="home"><section class="home-hero">
         <div>
-          <span class="eyebrow"><b>v0.10.2</b> · ${t('hero.badge')}</span>
+          <span class="eyebrow"><b>v0.10.5</b> · ${t('hero.badge')}</span>
           <h1>${t('hero.title')}</h1>
           <p class="lead">${t('hero.lead')}</p>
           <div class="cmd"><code>${t('hero.cmd')}</code><span class="copy">npm</span></div>
@@ -230,7 +230,7 @@ export default function ({ site, t, locale, defaultLocale, page }) {
       lastmod: '2026-07-09',
       software: {
         name: 'biagiojs',
-        version: '0.10.2',
+        version: '0.10.5',
         applicationCategory: 'DeveloperApplication',
         operatingSystem: 'Any',
         downloadUrl: 'https://www.npmjs.com/package/biagiojs',

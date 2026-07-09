@@ -15,8 +15,10 @@ Il piano di idratazione è il cuore di biagiojs: decide **quali** isole ricevono
 | Bucket | Comportamento |
 |--------|---------------|
 | **eager** | Idrata subito dopo il primo paint |
-| **lazy** | Idrata su `requestIdleCallback` o quando entra nel viewport |
+| **lazy** | Idrata su `requestIdleCallback` (max **1,5s**) o quando entra nel viewport |
 | **static** | Solo HTML — **zero JS spedito** |
+
+Le isole lazy vicine al viewport si idratano con **IntersectionObserver** (`rootMargin: 200px`). Lo sweep idle parte quando il browser è libero, o al massimo dopo **1,5 secondi** (`requestIdleCallback({ timeout: 1500 })`, oppure `setTimeout(1500)` come fallback).
 
 ## Soglie default
 

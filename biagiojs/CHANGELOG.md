@@ -10,6 +10,44 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning [Sem
 
 ---
 
+## [0.10.5] — 2026-07-09
+
+### Changed
+
+- **Lazy hydration idle cap** — `requestIdleCallback` timeout and `setTimeout` fallback reduced from 2s to **1.5s** so below-the-fold islands hydrate sooner when the main thread stays busy
+- Scaffold and `create-biagiojs` bumped to `^0.10.5`
+
+### Docs
+
+- **Critical CSS** guide (EN/IT): `hooks.head`, inline component styles, per-page purge, defer pattern
+- **Hydration** docs: document 1.5s lazy idle maximum
+
+---
+
+## [0.10.4] — 2026-07-09
+
+### Fixed
+
+- **`hooks.head` in dev/SSR** — `renderRequest()` (Vite dev, preview, on-demand adapters) now applies `hooks.head` from `biagio.config.js`, same as production build
+
+### Changed
+
+- Scaffold and `create-biagiojs` bumped to `^0.10.4`
+
+---
+
+## [0.10.3] — 2026-07-09
+
+### Fixed
+
+- **Link & asset checker** — expands internal routes with locale prefixes from `site.locales`, so multilingual builds (e.g. `/it/docs/`) no longer fail with false positives
+
+### Changed
+
+- Scaffold and `create-biagiojs` bumped to `^0.10.3`
+
+---
+
 ## [0.10.2] — 2026-07-09
 
 ### Added

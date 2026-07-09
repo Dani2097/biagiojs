@@ -6,6 +6,7 @@ import { pagesAffectedByChange, isFullRebuild } from '../src/core/incremental.js
 import { formatErrorOverlay, BiagioError } from '../src/core/errors.js';
 import { scaffoldPage, scaffoldIsland } from '../src/core/scaffold.js';
 import { checkLinksAndAssets } from '../src/core/link-checker.js';
+import { renderRequest } from '../src/server-render.js';
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -80,5 +81,23 @@ test('link-checker: espande route con prefisso i18n', () => {
   }).filter(i => i.type === 'link');
 
   assert.equal(issues.length, 0);
+  rmSync(root, { recursive: true });
+});
+
+test('renderRequest: hooks.head da biagio.config.js in dev/SSR', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'biagio-'));
+  mkdirSync(join(root, 'pages'), { recursive: true });
+  writeFileSync(join(root, 'biagio.config.js'), `export default {
+  site: { name: 't', baseUrl: 'https://t.com' },
+  hooks: {
+    head() { return '<link rel="stylesheet" href="/theme.css">'; },
+  },
+};`);
+  writeFileSync(join(root, 'pages', 'index.page.biagio'), `<page title="Home" />
+<component id="main" seo="1" conversion="0.5">
+  <template><main>ok</main></template>
+</component>`);
+  const html = await renderRequest(root, '/', { dev: true });
+  assert.match(html, /href="\/theme\.css"/);
   rmSync(root, { recursive: true });
 });

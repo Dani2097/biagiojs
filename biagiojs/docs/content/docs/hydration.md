@@ -15,8 +15,10 @@ The hydration plan is the heart of biagiojs: it decides **which** islands receiv
 | Bucket | Behavior |
 |--------|----------|
 | **eager** | Hydrates right after first paint |
-| **lazy** | Hydrates on `requestIdleCallback` or viewport entry |
+| **lazy** | Hydrates on `requestIdleCallback` (max **1.5s** wait) or viewport entry |
 | **static** | HTML only — **zero JS shipped** |
+
+Lazy islands near the viewport hydrate via **IntersectionObserver** (`rootMargin: 200px`). The idle sweep runs when the browser is idle, or after **1.5 seconds** at latest (`requestIdleCallback({ timeout: 1500 })`, or `setTimeout(1500)` as fallback).
 
 ## Default thresholds
 

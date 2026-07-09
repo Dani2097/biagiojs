@@ -8,6 +8,35 @@ lastmod: 2026-07-09
 
 # Changelog
 
+## 0.10.5 — 2026-07-09
+
+### Docs
+
+- Guida **Critical CSS** (EN/IT)
+- **Hydration**: tetto idle lazy 1,5s documentato
+
+### Changed
+
+- Cap idle idratazione lazy: 2s → **1,5s**
+
+---
+
+## 0.10.4 — 2026-07-09
+
+### Fixed
+
+- **`hooks.head` in dev** — global CSS/links from `biagio.config.js` `hooks.head` now apply in `biagio dev` and SSR paths, not only at build time
+
+---
+
+## 0.10.3 — 2026-07-09
+
+### Fixed
+
+- Link & asset checker: locale-prefixed routes (`/it/docs/`, etc.) recognized when `site.locales` is set — fixes false build failures on multilingual sites
+
+---
+
 ## 0.10.2 — 2026-07-09
 
 ### Added
