@@ -121,7 +121,10 @@ export async function runDoctor(root) {
     }
   }
 
-  const linkIssues = checkPageSources(root);
+  const linkIssues = checkPageSources(root, {
+    locales: config.site?.locales,
+    defaultLocale: config.site?.defaultLocale || config.site?.locales?.[0],
+  });
   for (const i of linkIssues) {
     warnings.push(`${i.page}: link interno rotto ${i.ref}`);
   }

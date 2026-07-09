@@ -63,3 +63,22 @@ test('link-checker: rileva link rotti, ignora validi e route dinamiche', () => {
   assert.equal(issues[0].ref, '/nope/');
   rmSync(root, { recursive: true });
 });
+
+test('link-checker: espande route con prefisso i18n', () => {
+  const root = mkdtempSync(join(tmpdir(), 'biagio-'));
+  mkdirSync(join(root, 'pages', 'docs'), { recursive: true });
+  writeFileSync(join(root, 'pages', 'index.page.js'), 'export default () => ({});');
+  writeFileSync(join(root, 'pages', 'docs', 'index.page.js'), 'export default () => ({});');
+  const dist = join(root, 'dist');
+  mkdirSync(dist, { recursive: true });
+
+  const html = '<a href="/it/">home it</a> <a href="/it/docs/">docs it</a> <a href="/docs/">docs en</a>';
+  const issues = checkLinksAndAssets(root, [['/docs/', html]], {
+    dist,
+    locales: ['en', 'it'],
+    defaultLocale: 'en',
+  }).filter(i => i.type === 'link');
+
+  assert.equal(issues.length, 0);
+  rmSync(root, { recursive: true });
+});

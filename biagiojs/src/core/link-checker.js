@@ -4,11 +4,12 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { walkPageFiles } from './incremental.js';
+import { localePath } from './i18n.js';
 
 const HREF_RE = /href\s*=\s*["']([^"']+)["']/gi;
 const SRC_RE = /(?:src|srcset)\s*=\s*["']([^"']+)["']/gi;
 
-function collectRoutes(root) {
+function collectRoutes(root, { locales = [], defaultLocale } = {}) {
   const routes = new Set(['/']);
   for (const file of walkPageFiles(join(root, 'pages'))) {
     let route = file.replace(/\.page\.(js|ts|biagio)$/, '').replace(/\/index$/, '');
@@ -25,7 +26,15 @@ function collectRoutes(root) {
       }
     }
   }
-  return routes;
+  if (!locales?.length) return routes;
+  const expanded = new Set(routes);
+  for (const locale of locales) {
+    if (locale === defaultLocale) continue;
+    for (const r of routes) {
+      expanded.add(localePath(r, locale, defaultLocale));
+    }
+  }
+  return expanded;
 }
 
 function isInternal(href) {
@@ -71,10 +80,10 @@ function matchesRoute(routes, norm) {
  * @param {Array<[string, string]>} htmlChunks — [pagePath, html]
  * @param {{ dist?: string }} [opts]
  */
-export function checkLinksAndAssets(root, htmlChunks, { dist } = {}) {
+export function checkLinksAndAssets(root, htmlChunks, { dist, locales, defaultLocale } = {}) {
   root = resolve(root);
   dist = dist || join(root, 'dist');
-  const routes = collectRoutes(root);
+  const routes = collectRoutes(root, { locales, defaultLocale });
   const issues = [];
 
   const imgFiles = new Set();
@@ -138,9 +147,9 @@ export function formatLinkReport(issues) {
 }
 
 /** Scansiona sorgenti pagine per href interni (doctor pre-build). */
-export function checkPageSources(root) {
+export function checkPageSources(root, { locales, defaultLocale } = {}) {
   const issues = [];
-  const routes = collectRoutes(root);
+  const routes = collectRoutes(root, { locales, defaultLocale });
   const pagesDir = join(root, 'pages');
   for (const file of walkPageFiles(pagesDir)) {
     const src = readFileSync(join(pagesDir, file), 'utf8');

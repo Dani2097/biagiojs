@@ -313,7 +313,11 @@ export async function build(projectDir, {
       const detail = missing.slice(0, 5).map(m => `  ${m.page}: ${m.ref}\n    → ${m.hint}`).join('\n');
       throw new BiagioError(`${missing.length} immagine/i referenziate ma assenti in dist/img/:\n${detail}${missing.length > 5 ? '\n  …' : ''}`);
     }
-    const linkIssues = checkLinksAndAssets(root, builtHtml, { dist });
+    const linkIssues = checkLinksAndAssets(root, builtHtml, {
+      dist,
+      locales: site.locales,
+      defaultLocale: site.defaultLocale || site.locales?.[0],
+    });
     if (linkIssues.length) {
       const detail = linkIssues.slice(0, 5).map(i => `  ${i.page}: ${i.ref} → ${i.hint}`).join('\n');
       throw new BiagioError(`${linkIssues.length} problema/i link/asset:\n${detail}${linkIssues.length > 5 ? '\n  …' : ''}`);
