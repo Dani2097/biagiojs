@@ -10,7 +10,7 @@ function scaffold(dir, { withSharp = true, withImages = false } = {}) {
   writeFileSync(join(dir, 'biagio.config.js'), `export default { site: { name: 'T', baseUrl: 'https://t.dev' } };`);
   writeFileSync(join(dir, 'pages', 'index.page.biagio'), '<page title="t" /><component id="x"><template>ok</template></component>');
   writeFileSync(join(dir, 'package.json'), JSON.stringify({
-    dependencies: { biagiojs: '^0.10.1' },
+    dependencies: { biagiojs: '^0.10.2' },
     devDependencies: withSharp ? { sharp: '^0.33.0' } : {},
   }));
   if (withImages) {

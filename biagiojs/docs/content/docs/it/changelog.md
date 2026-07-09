@@ -8,7 +8,7 @@ lastmod: 2026-07-09
 
 # Changelog
 
-## Unreleased
+## 0.10.2 — 2026-07-09
 
 ### Aggiunte
 

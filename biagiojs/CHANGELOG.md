@@ -8,6 +8,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning [Sem
 
 ## [Unreleased]
 
+---
+
+## [0.10.2] — 2026-07-09
+
 ### Added
 
 - **Configurable weights** — `BUSINESS_WEIGHTS` (the `businessValue` coefficients) exported from `biagiojs/graph`, `normalizeBusinessWeights()`, and per-node or config overrides (`site.weights` / `compileBiagio(src, file, { weights })`). The coefficients are no longer magic numbers buried in the code: a single, documented, recalibratable knob.
@@ -29,6 +33,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning [Sem
 
 - **Accessibility (DOM order)** — by default the DOM follows reading order (`contentOrder: 'visual'`), so tab order and screen readers are correct (WCAG 2.4.3 / 1.3.2). Reordering by business value stays available with `contentOrder: 'priority'` (useful for streaming SSR). Business priority still drives **hydration and preload** in both modes.
 - **Hydrate emission** — `.biagio` `hydrate` scripts are emitted from their raw source, without a `Function.prototype.toString()` round-trip (robust across engines and minifiers). `new Function` remains only as a build-time syntax validator.
+- Scaffold and `create-biagiojs` bumped to `^0.10.2`
 
 ### Security
 

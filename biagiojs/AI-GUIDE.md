@@ -1,6 +1,6 @@
 # biagiojs — Guide for AI agents
 
-> **Version:** 0.10.1 · Canonical document for LLMs/agents building sites with biagiojs.
+> **Version:** 0.10.2 · Canonical document for LLMs/agents building sites with biagiojs.
 >
 > Human overview: [README](./README.md) · Images: [IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md) · Cache: [DEPLOY-CACHE.md](./DEPLOY-CACHE.md)
 

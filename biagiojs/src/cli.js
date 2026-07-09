@@ -490,7 +490,7 @@ export function create(dir, { template: templateName = 'default' } = {}) {
       doctor: 'biagio doctor .',
       analyze: 'biagio analyze .',
     },
-    dependencies: { 'biagiojs': '^0.10.1' },
+    dependencies: { 'biagiojs': '^0.10.2' },
     devDependencies: { vite: '^6.0.0', sharp: '^0.33.0' },
   }, null, 2) + '\n');
   writeFileSync(join(root, '.gitignore'), 'node_modules\ndist\n.env\n');
