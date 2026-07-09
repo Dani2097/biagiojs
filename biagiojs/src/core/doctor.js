@@ -4,6 +4,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { loadConfig } from './config.js';
+import { checkPageSources } from './link-checker.js';
 
 function walk(dir, out = []) {
   if (!existsSync(dir)) return out;
@@ -93,6 +94,36 @@ export async function runDoctor(root) {
 
   if (config.site?.fonts?.subset && !hasDep(root, 'subset-font')) {
     warnings.push('site.fonts.subset attivo ma subset-font non installato');
+  }
+
+  // Favicon generator opt-in
+  const fav = config.site?.favicon;
+  if (fav && typeof fav === 'object' && fav.generate) {
+    if (!fav.source) {
+      errors.push('site.favicon.generate attivo ma manca site.favicon.source');
+    } else if (!existsSync(join(root, fav.source))) {
+      errors.push(`site.favicon.source non trovato: ${fav.source}`);
+    } else {
+      const isSvg = /\.svg$/i.test(fav.source);
+      const needsRaster = (fav.targets || []).some(t => ['ico', 'apple', 'pwa'].includes(t));
+      if (needsRaster && !hasDep(root, 'sharp')) {
+        errors.push('site.favicon.generate richiede sharp per ico/apple/pwa (`npm i -D sharp`)');
+      }
+      if (!isSvg && (fav.targets || []).includes('svg')) {
+        warnings.push('favicon: target "svg" richiede un sorgente SVG — sarà ignorato');
+      }
+      if (!isSvg) {
+        try {
+          const bytes = readFileSync(join(root, fav.source));
+          if (bytes.length < 1024) warnings.push('site.favicon.source molto piccolo: usa un SVG o un PNG ≥512px');
+        } catch { /* ignore */ }
+      }
+    }
+  }
+
+  const linkIssues = checkPageSources(root);
+  for (const i of linkIssues) {
+    warnings.push(`${i.page}: link interno rotto ${i.ref}`);
   }
 
   return { ok: errors.length === 0, errors, warnings };

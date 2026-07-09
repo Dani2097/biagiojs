@@ -32,7 +32,7 @@ export default {
       html: 'public, max-age=0, must-revalidate',
       assets: 'public, max-age=31536000, immutable',
     },
-    favicon: { svg: '/favicon.svg', themeColor: '#ef2f47' },
+    favicon: { source: 'public/favicon.svg', generate: true, themeColor: '#ef2f47', targets: ['ico', 'svg', 'apple', 'pwa'] },
     fonts: { inject: false },
     images: {
       bySlug: {

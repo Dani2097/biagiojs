@@ -10,7 +10,7 @@ import { pathToFileURL } from 'node:url';
 import { renderPage } from './ssr.js';
 import { loadReports, optimize } from './core/optimizer.js';
 import { ExperimentEngine } from './core/experiments.js';
-import { getCollection } from './core/content.js';
+import { getCollection, preloadContentSchemas } from './core/content.js';
 import { loadBiagioFile } from './compiler.js';
 import { loadLocale, makeT, localePath, splitLocaleFromUrl } from './core/i18n.js';
 
@@ -53,6 +53,7 @@ export function matchRoute(pagesDir, url) {
  */
 export async function renderRequest(root, url, { loadModule, request = {}, userId = 'ssr', dev = false, meta = {} } = {}) {
   root = resolve(root);
+  await preloadContentSchemas(root);
   const load = loadModule || (id => import(pathToFileURL(id).href + (dev ? '?t=' + Date.now() : '')));
   const configPath = join(root, 'biagio.config.js');
   const site = existsSync(configPath) ? (await load(configPath)).default.site : { name: 'biagiojs Site', baseUrl: 'https://example.com' };

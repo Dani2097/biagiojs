@@ -1,8 +1,8 @@
 # Image Optimization — biagiojs
 
-> Guida alla pipeline immagini. Panoramica framework: [README](./README.md) · Cache deploy: [DEPLOY-CACHE.md](./DEPLOY-CACHE.md).
+> Guide to the image pipeline. Framework overview: [README](./README.md) · Deploy cache: [DEPLOY-CACHE.md](./DEPLOY-CACHE.md).
 
-## Panoramica
+## Overview
 
 ```
 images/hero.jpg          biagio build              dist/img/hero-480w.avif
@@ -10,15 +10,15 @@ images/hero.jpg          biagio build              dist/img/hero-480w.avif
        │                 processImages()               hero-1920w.jpg
        │                      ▲                            …
        │                      │
-pages/*.page.js ──► smartImage({ profile: 'hero' }) ──► HTML con srcset
+pages/*.page.js ──► smartImage({ profile: 'hero' }) ──► HTML with srcset
 ```
 
-1. Metti i sorgenti in `images/` (o scaricali da remoto con `site.images.remote`).
-2. La build genera varianti **AVIF + WebP + JPEG** per ogni bucket di larghezza.
-3. Nei componenti usi `smartImage()` con un **profilo** o larghezze esplicite.
-4. Post-build: ogni file referenziato in `srcset` deve esistere in `dist/img/`.
+1. Put sources in `images/` (or download them remotely with `site.images.remote`).
+2. The build generates **AVIF + WebP + JPEG** variants for every width bucket.
+3. In components you use `smartImage()` with a **profile** or explicit widths.
+4. Post-build: every file referenced in `srcset` must exist in `dist/img/`.
 
-**Dipendenza**: `sharp` (optionalDependency). Se `images/` non è vuota e `sharp` manca, la build fallisce.
+**Dependency**: `sharp` (optionalDependency). If `images/` is not empty and `sharp` is missing, the build fails.
 
 ```bash
 npm i -D sharp
@@ -26,16 +26,16 @@ npm i -D sharp
 
 ---
 
-## Profili — il componente sceglie il contesto
+## Profiles — the component picks the context
 
-Invece di ricordare array di pixel, il componente dichiara **come** viene mostrata l'immagine:
+Instead of remembering pixel arrays, the component declares **how** the image is displayed:
 
-| Profilo | Bucket default | `sizes` default | Quando usarlo |
-|---------|----------------|-----------------|---------------|
-| `content` | 480, 960, 1440 | `(max-width: 920px) 100vw, 920px` | Immagini nel layout standard (~920px) |
-| `hero` | 480, 960, 1440, **1920** | `100vw` | Hero full-bleed, LCP above-the-fold |
-| `thumb` | 480, 640 | `(max-width: 200px) 120px, 200px` | Card, carousel, anteprime |
-| `full` | 640, 1024, 1536, 1920 | `100vw` | Foto grandi, gallerie wide |
+| Profile | Default buckets | Default `sizes` | When to use it |
+|---------|-----------------|-----------------|----------------|
+| `content` | 480, 960, 1440 | `(max-width: 920px) 100vw, 920px` | Images in the standard layout (~920px) |
+| `hero` | 480, 960, 1440, **1920** | `100vw` | Full-bleed hero, above-the-fold LCP |
+| `thumb` | 480, 640 | `(max-width: 200px) 120px, 200px` | Cards, carousels, thumbnails |
+| `full` | 640, 1024, 1536, 1920 | `100vw` | Large photos, wide galleries |
 
 ```js
 import { PerfNode } from 'biagiojs/graph';
@@ -47,24 +47,24 @@ g.add(new PerfNode('hero-img', {
     g.get('hero-img'),
     {
       src: '/img/hero',
-      alt: 'Collezione 2026',
+      alt: '2026 Collection',
       width: 1920,
       height: 1080,
       profile: 'hero',
       aboveFold: true,
-      images: site.images,   // da ctx in pages/*.page.js
+      images: site.images,   // from ctx in pages/*.page.js
     },
   ).html,
 }));
 ```
 
-Il profilo imposta **sia** i bucket di build (se allineato con config) **sia** `sizes` nel markup.
+The profile sets **both** the build buckets (when aligned with config) **and** `sizes` in the markup.
 
 ---
 
-## Tre modi per definire le larghezze
+## Three ways to define widths
 
-### 1. Profilo (consigliato)
+### 1. Profile (recommended)
 
 ```js
 smartImage(node, { src: '/img/hero', profile: 'hero', alt: '…', images: site.images })
@@ -72,14 +72,14 @@ smartImage(node, { src: '/img/hero', profile: 'hero', alt: '…', images: site.i
 
 ### 2. Per slug in config (`bySlug`)
 
-Genera solo i bucket necessari per ogni file — efficiente quando hero e thumbnail convivono nello stesso sito:
+Generates only the buckets each file needs — efficient when heroes and thumbnails coexist on the same site:
 
 ```js
 // biagio.config.js
 export default {
   site: {
     images: {
-      widths: [480, 960, 1440],          // default per slug non elencati
+      widths: [480, 960, 1440],          // default for slugs not listed
       bySlug: {
         hero: [480, 960, 1440, 1920],
         aerofoam: [480, 960, 1440],
@@ -91,14 +91,14 @@ export default {
 ```
 
 ```js
-// Il componente può omettere widths: risolve da bySlug + src
+// The component can omit widths: it resolves from bySlug + src
 smartImage(node, { src: '/img/hero', alt: '…', images: site.images })
 ```
 
-`images/hero.jpg` → slug `hero` → build genera 4 bucket × 3 formati.  
-`images/thumb-card.png` → slug `thumb-card` (o override in `bySlug` con chiave esatta).
+`images/hero.jpg` → slug `hero` → build generates 4 buckets × 3 formats.  
+`images/thumb-card.png` → slug `thumb-card` (or override in `bySlug` with the exact key).
 
-### 3. Larghezze esplicite (override puntuale)
+### 3. Explicit widths (one-off override)
 
 ```js
 smartImage(node, {
@@ -109,17 +109,17 @@ smartImage(node, {
 })
 ```
 
-**Importante**: le larghezze usate nel markup devono essere state generate a build. La validazione post-build segnala i mismatch.
+**Important**: the widths used in the markup must have been generated at build. Post-build validation flags mismatches.
 
-### Priorità di risoluzione
+### Resolution priority
 
 ```
-widths espliciti  →  profile  →  bySlug[src]  →  site.images.widths
+explicit widths  →  profile  →  bySlug[src]  →  site.images.widths
 ```
 
 ---
 
-## Config completa
+## Full config
 
 ```js
 export default {
@@ -129,12 +129,12 @@ export default {
       quality: 75,
       allowSmallerSources: true,
 
-      // Override per file (slug = nome normalizzato)
+      // Per-file override (slug = normalized name)
       bySlug: {
         hero: [480, 960, 1440, 1920],
       },
 
-      // Override o nuovi profili
+      // Override or new profiles
       profiles: {
         hero: { widths: [480, 960, 1920], sizes: '100vw' },
         product: { widths: [480, 800, 1200], sizes: '(max-width: 600px) 100vw, 600px' },
@@ -155,23 +155,23 @@ export default {
 };
 ```
 
-| Opzione | Default | Descrizione |
-|---------|---------|-------------|
-| `widths` | `[480, 960, 1440]` | Bucket per immagini senza entry in `bySlug` |
-| `bySlug` | `{}` | Mappa slug → array larghezze (build per-file) |
-| `profiles` | built-in | Override profili `content`, `hero`, `thumb`, `full` o nuovi nomi |
-| `quality` | `75` | Qualità AVIF/WebP; JPEG = quality + 5 |
-| `qualityBySlug` | `{}` | Qualità per slug: `{ hero: 50, sponsor: 55 }` |
-| `respectSourceMax` | `true` | Non genera bucket più larghi della sorgente |
-| `dryRun` | `false` | Solo pianificazione bucket (nessun file scritto) |
-| `avif` | `{ effort: 4, chromaSubsampling: '4:2:0' }` | Opzioni sharp AVIF |
-| `allowSmallerSources` | `true` | Sorgente piccola: genera bucket con `withoutEnlargement` |
+| Option | Default | Description |
+|--------|---------|-------------|
+| `widths` | `[480, 960, 1440]` | Buckets for images without a `bySlug` entry |
+| `bySlug` | `{}` | Map slug → width array (per-file build) |
+| `profiles` | built-in | Override the `content`, `hero`, `thumb`, `full` profiles or add new names |
+| `quality` | `75` | AVIF/WebP quality; JPEG = quality + 5 |
+| `qualityBySlug` | `{}` | Quality per slug: `{ hero: 50, sponsor: 55 }` |
+| `respectSourceMax` | `true` | Don't generate buckets wider than the source |
+| `dryRun` | `false` | Bucket planning only (no files written) |
+| `avif` | `{ effort: 4, chromaSubsampling: '4:2:0' }` | sharp AVIF options |
+| `allowSmallerSources` | `true` | Small source: generates buckets with `withoutEnlargement` |
 
 ---
 
-## Slug dei file
+## File slugs
 
-I nomi in `images/` sono normalizzati:
+Names in `images/` are normalized:
 
 ```
 imgFood.png       →  imgfood
@@ -186,26 +186,26 @@ imgSlug('Foto Prodotto.jpg');  // 'foto-prodotto'
 slugFromSrc('/img/hero-960w.jpg'); // 'hero'
 ```
 
-Usa sempre lo slug nel codice: `src="/img/hero"`, non il nome file originale.
+Always use the slug in code: `src="/img/hero"`, not the original file name.
 
 ---
 
-## `smartImage()` — comportamento automatico
+## `smartImage()` — automatic behavior
 
-Oltre a `srcset` responsive, deriva da **priority score** del nodo:
+Beyond a responsive `srcset`, it derives from the node's **priority score**:
 
 | Score | `loading` | `fetchpriority` | `decoding` |
 |-------|-----------|-----------------|------------|
-| Alto (LCP) | `eager` | `high` | `sync` |
-| Basso | `lazy` | `auto` | `async` |
+| High (LCP) | `eager` | `high` | `sync` |
+| Low | `lazy` | `auto` | `async` |
 
-Format stack nel `<picture>`:
+Format stack in `<picture>`:
 
 1. AVIF  
 2. WebP  
 3. JPEG (fallback `<img>`)
 
-Preload LCP via network scheduler:
+LCP preload via the network scheduler:
 
 ```js
 assets: [
@@ -222,7 +222,7 @@ assets: [
 
 ---
 
-## Immagini remote (pre-build)
+## Remote images (pre-build)
 
 ```js
 remote: {
@@ -234,51 +234,51 @@ remote: {
 }
 ```
 
-Flusso: download → `images/hero.jpg` → `processImages` con `bySlug.hero` se definito.
+Flow: download → `images/hero.jpg` → `processImages` with `bySlug.hero` if defined.
 
-Solo HTTPS; dominio deve essere in `allowedDomains` (accetta sottodomini).
-
----
-
-## Validazione post-build
-
-Dopo il render, biagiojs verifica che ogni `/img/*-Nw.{avif,webp,jpg}` referenziato nell'HTML esista in `dist/img/`.
-
-Errori tipici:
-
-| Errore | Causa | Fix |
-|--------|-------|-----|
-| `missing-1920w.avif` | Componente usa `profile: 'hero'` ma build senza 1920 | Aggiungi `bySlug` o allarga `widths` |
-| Build fallisce senza sharp | `images/` non vuota | `npm i -D sharp` |
-| 0 varianti generate | `allowSmallerSources: false` e sorgente troppo piccola | Abilita `allowSmallerSources` o abbassa i bucket |
+HTTPS only; the domain must be in `allowedDomains` (subdomains accepted).
 
 ---
 
-## Scelta dei bucket — guida pratica
+## Post-build validation
 
-**Non alzare i default globali per tutti.** Usa profili o `bySlug`.
+After render, biagiojs verifies that every `/img/*-Nw.{avif,webp,jpg}` referenced in the HTML exists in `dist/img/`.
 
-| Scenario | Strategia |
-|----------|-----------|
-| Blog / vetrina standard | `profile: 'content'` (default) |
-| Hero full-bleed | `profile: 'hero'` + `bySlug.hero` con 1920 |
-| Thumbnail carousel | `profile: 'thumb'` |
-| Mix hero + thumb nello stesso sito | `bySlug` per ogni immagine |
-| E-commerce prodotto zoom | Profilo custom `product` in config |
+Common errors:
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `missing-1920w.avif` | Component uses `profile: 'hero'` but the build has no 1920 | Add `bySlug` or widen `widths` |
+| Build fails without sharp | `images/` not empty | `npm i -D sharp` |
+| 0 variants generated | `allowSmallerSources: false` and the source is too small | Enable `allowSmallerSources` or lower the buckets |
+
+---
+
+## Choosing buckets — practical guide
+
+**Don't raise the global defaults for everything.** Use profiles or `bySlug`.
+
+| Scenario | Strategy |
+|----------|----------|
+| Standard blog / showcase | `profile: 'content'` (default) |
+| Full-bleed hero | `profile: 'hero'` + `bySlug.hero` with 1920 |
+| Carousel thumbnail | `profile: 'thumb'` |
+| Hero + thumb mix on the same site | `bySlug` per image |
+| Product zoom e-commerce | Custom `product` profile in config |
 
 ### Retina
 
-Per contenuto max 920px:
-- 1x → serve ~920px → bucket `960` ✅  
-- 2x → serve ~1840px → bucket `1440` è al limite; per hero LCP considera `1920`
+For content up to 920px:
+- 1x → needs ~920px → bucket `960` ✅  
+- 2x → needs ~1840px → bucket `1440` is at the limit; for hero LCP consider `1920`
 
-### Quanti bucket?
+### How many buckets?
 
-**3–5** è l'intervallo ottimale. Oltre 6 bucket il browser guadagna poco e la build/dist crescono linearmente (×3 formati per bucket).
+**3–5** is the sweet spot. Beyond 6 buckets the browser gains little and the build/dist grow linearly (×3 formats per bucket).
 
-### `bySlug` avanzato (qualità + crop)
+### Advanced `bySlug` (quality + crop)
 
-Oltre agli array di larghezze, ogni slug può essere un oggetto:
+Beyond width arrays, each slug can be an object:
 
 ```js
 bySlug: {
@@ -291,9 +291,9 @@ bySlug: {
 },
 ```
 
-Il profilo built-in `experience` include già crop 4:3 e quality 44.
+The built-in `experience` profile already includes a 4:3 crop and quality 44.
 
-### `qualityBySlug` (alternativa)
+### `qualityBySlug` (alternative)
 
 ```js
 qualityBySlug: { hero: 50, experience: 44 },
@@ -301,36 +301,36 @@ qualityBySlug: { hero: 50, experience: 44 },
 
 ---
 
-## `smartImage` — fallback migliorato
+## `smartImage` — improved fallback
 
-Il `<img>` fallback usa **WebP** con il bucket **medio** (non il massimo), riducendo il download su browser senza AVIF:
+The `<img>` fallback uses **WebP** at the **middle** bucket (not the largest), reducing the download on browsers without AVIF:
 
 ```html
 <img src="/img/hero-960w.webp" srcset="...webp..." />
 ```
 
-I `<source>` restano AVIF → WebP.
+The `<source>` tags stay AVIF → WebP.
 
 ---
 
 ## Build CLI
 
 ```bash
-npx biagio build . --clean      # cancella dist/img/ prima di rigenerare
-npx biagio build . --dryRun     # elenca bucket pianificati, non scrive file
+npx biagio build . --clean      # clears dist/img/ before regenerating
+npx biagio build . --dryRun     # lists planned buckets, writes no files
 ```
 
-A fine build, il log mostra **report pesi** (top 10 file + totale KiB in `dist/img/`).
+At the end of the build, the log shows a **weight report** (top 10 files + total KiB in `dist/img/`).
 
-La validazione post-build include **hint espliciti**:
+Post-build validation includes **explicit hints**:
 
 ```
-→ profile "experience" richiede 400w ma bySlug.cultural non lo include
+→ profile "experience" requires 400w but bySlug.cultural doesn't include it
 ```
 
 ---
 
-## API export (`biagiojs/images`)
+## API exports (`biagiojs/images`)
 
 ```js
 import {
@@ -347,21 +347,39 @@ import {
 
 ---
 
-## Dev e Vite
+## Favicon generator (opt-in)
 
-- `biagio dev` e il plugin Vite rigenerano `dist/img/` all'avvio e al cambio file in `images/`.
-- In dev `strict: false` su sharp: warning invece di exit se manca.
+The same `sharp` pipeline powers a build-time favicon generator. Enable it with an object `site.favicon`:
+
+```js
+site: {
+  favicon: {
+    source: 'images/logo.svg',   // SVG ideal, or PNG ≥512
+    generate: true,
+    themeColor: '#111',
+    background: '#ffffff',        // flatten background for raster icons
+    // targets: ['ico', 'svg', 'apple', 'pwa'],
+  },
+}
+```
+
+It writes the modern essential set to `dist/`: `favicon.ico` (16/32/48, via an inline ICO encoder — sharp does not emit `.ico`), `icon.svg` (from an SVG source), `apple-touch-icon.png` (180), and the PWA `icon-192.png` + `icon-512.png` + `manifest.webmanifest`. The head tags (including `rel="manifest"` and `theme-color`) are injected automatically. Runs after `public/` copy (generated files win), is idempotent, and is validated by `biagio doctor`. Standalone API: `import { generateFavicons } from 'biagiojs/favicon'`.
+
+## Dev and Vite
+
+- `biagio dev` and the Vite plugin regenerate `dist/img/` on startup and when files in `images/` change.
+- In dev, `strict: false` on sharp: a warning instead of an exit if it's missing.
 
 ---
 
 ## Checklist
 
 - [ ] `npm i -D sharp`
-- [ ] File in `images/` con nomi chiari (diventano slug)
-- [ ] `bySlug` o profili allineati a come usi le immagini nei componenti
-- [ ] `images: site.images` passato a `smartImage()` quando usi `profile` o `bySlug`
-- [ ] `sizes` coerente con il CSS del componente
-- [ ] `npx biagio build .` senza errori di validazione srcset
-- [ ] Hero LCP: `aboveFold: true` + preload in `assets` se critico
-- [ ] `biagio build --clean` prima del deploy
-- [ ] Cache asset: vedi **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)**
+- [ ] Files in `images/` with clear names (they become slugs)
+- [ ] `bySlug` or profiles aligned with how you use images in components
+- [ ] `images: site.images` passed to `smartImage()` when using `profile` or `bySlug`
+- [ ] `sizes` consistent with the component's CSS
+- [ ] `npx biagio build .` with no srcset validation errors
+- [ ] Hero LCP: `aboveFold: true` + preload in `assets` if critical
+- [ ] `biagio build --clean` before deploy
+- [ ] Asset cache: see **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)**

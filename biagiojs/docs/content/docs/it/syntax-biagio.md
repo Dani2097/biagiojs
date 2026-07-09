@@ -60,7 +60,7 @@ La sintassi `.biagio` è il modo più diretto per scrivere pagine: pesi business
 | Attributo | Range | Effetto |
 |-----------|-------|---------|
 | `seo` | 0–1 | Priorità contenuto SEO-critical |
-| `conversion` | 0–1 | Ordine nel sorgente HTML |
+| `conversion` | 0–1 | Priorità di hydration e preload |
 | `interaction` | 0–1 | Probabilità idratazione |
 | `cpu` | 1–10 | Costo rendering |
 | `network` | KB | Costo rete per preload |
@@ -84,8 +84,14 @@ Il modulo in `islands/` esporta `default function (el, props) { … }`.
 
 ## Ordine visivo vs rendering
 
-L'ordine nel file determina il layout CSS (`domOrder`). L'ordine di **rendering HTML** lo decide lo scheduler in base ai pesi — un CTA con `conversion="1"` può finire prima nel sorgente anche se è più in basso nel file.
+Di default il DOM è emesso in **ordine di file (lettura)**, così ordine visivo, da tastiera e per screen reader coincidono (WCAG 2.4.3 / 1.3.2). I pesi business guidano la priorità di **hydration e preload** — non l'ordine fisico del DOM.
+
+Passando `contentOrder: 'priority'` a `renderPage`, lo scheduler riordina il sorgente HTML per valore business (un CTA con `conversion="1"` può finire prima nel sorgente) ripristinando l'ordine visivo via flex `order` CSS. Utile con streaming SSR, ma il flex `order` non cambia il tab order né quello per gli screen reader: usalo consapevolmente.
 
 ## CSS
 
 Il blocco `<style>` viene purgato e minificato in build. Classi non usate nel DOM visibile vengono rimosse (PurgeCSS integrato).
+
+## Parsing robusto
+
+Il compiler `.biagio` è un tokenizer quote-aware, non una catena di regex. Gestisce `>` dentro i valori degli attributi (es. `props` JSON), `<template>` annidati, commenti HTML a livello top (un `<component>` commentato viene ignorato) e più blocchi `<style>`. Gli script `hydrate` inline sono emessi dalla sorgente grezza — nessun round-trip via `Function.prototype.toString` — e ogni `</script>` al loro interno viene neutralizzato per non bucare il tag.

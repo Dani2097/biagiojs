@@ -4,27 +4,28 @@
 
 Official site: https://biagio.danilosprovieri.com
 Default locale: English (`/it/` for Italian).
-Package: `npm i biagiojs` · Scaffold: `npx create-biagiojs my-site`
+Package: `npm i biagiojs` · Scaffold: `npx create-biagiojs my-site [--template blog|landing|docs|shop]`
 
 Important notes:
 - Pages without interactive islands ship **zero JavaScript** in production.
 - Declare weights on `<component>` in `.biagio` files or `PerfNode` in `.page.js`.
 - Hydration buckets: **eager**, **lazy**, **static** (default). Thresholds adapt from CrUX field data in `reports/`.
-- Config: `biagio.config.js` or `biagio.config.ts` — `site.baseUrl`, `site.locales`, `site.consent`, `site.fonts`, `site.images`.
+- Config: `import { defineConfig } from 'biagiojs/config'` in `biagio.config.js` (or `.ts`).
 
 ## Start
 
-- [Getting started](https://biagio.danilosprovieri.com/docs/getting-started/): install, first build, `biagio.config.js`
+- [Getting started](https://biagio.danilosprovieri.com/docs/getting-started/): install, templates, `defineConfig`, first page
 - [Project structure](https://biagio.danilosprovieri.com/docs/project-structure/): `pages/`, `islands/`, `content/`, routing conventions
 
 ## Syntax
 
 - [.biagio files](https://biagio.danilosprovieri.com/docs/syntax-biagio/): declarative pages, business weights, inline hydration
 - [JavaScript & TypeScript](https://biagio.danilosprovieri.com/docs/syntax-javascript/): `PerformanceGraph`, `getStaticPaths`, `getCollection`, SSR/ISR
+- [Content collections](https://biagio.danilosprovieri.com/docs/content-collections/): typed frontmatter, `defineCollection`, `draft: true`
 
 ## Concepts
 
-- [Business weights](https://biagio.danilosprovieri.com/docs/business-weights/): conversion, seo, interaction, cpu/network costs
+- [Business weights](https://biagio.danilosprovieri.com/docs/business-weights/): conversion, seo, interaction; weights inspector in dev
 - [Adaptive hydration](https://biagio.danilosprovieri.com/docs/hydration/): eager / lazy / static, overrides, consent gating
 - [Automatic SEO](https://biagio.danilosprovieri.com/docs/seo/): canonical, Open Graph, JSON-LD, sitemap, hreflang
 - [Internationalization](https://biagio.danilosprovieri.com/docs/i18n/): `site.locales`, `locales/*.json`, per-market reports
@@ -36,10 +37,12 @@ Important notes:
 - [Consent & cookies](https://biagio.danilosprovieri.com/docs/consent/): native banner, Cookiebot/Iubenda, Consent Mode v2
 - [Optimization loop](https://biagio.danilosprovieri.com/docs/optimization/): `reports/`, `pull-vitals`, A/B experiments
 - [Deploy & cache](https://biagio.danilosprovieri.com/docs/deploy/): CDN presets, `_headers`, Cloudflare/Vercel/Netlify
+- [CLI](https://biagio.danilosprovieri.com/docs/cli/): `dev`, `build`, `explain`, `new`, `doctor`, `analyze`, `preview`
+
 ## Reference
 
 - [AI agents](https://biagio.danilosprovieri.com/docs/ai-agents/): llms.txt, AI-GUIDE, workflow and weight tables for LLMs
-- [CLI](https://biagio.danilosprovieri.com/docs/cli/): `dev`, `build`, `doctor`, `analyze`, `preview`
+- [Changelog](https://biagio.danilosprovieri.com/docs/changelog/): release notes
 
 ## Italian (IT)
 
@@ -47,8 +50,16 @@ Same docs under `/it/docs/…` — e.g. [Per cominciare](https://biagio.danilosp
 
 ## Optional
 
-- [Changelog](https://biagio.danilosprovieri.com/docs/changelog/): release notes (v0.10.1)
-- [GitHub repository](https://github.com/Dani2097/biagiojs): source, issues, AI-GUIDE.md, IMAGE-OPTIMIZATION.md
+- [GitHub repository](https://github.com/Dani2097/biagiojs): source, issues, AI-GUIDE.md, IMAGE-OPTIMIZATION.md, VS Code extension in `extensions/vscode-biagio/`
 - [npm package](https://www.npmjs.com/package/biagiojs): `biagiojs` and `create-biagiojs`
 - [Sitemap](https://biagio.danilosprovieri.com/sitemap.xml): all indexable URLs with hreflang alternates
 - [robots.txt](https://biagio.danilosprovieri.com/robots.txt): crawl rules
+
+## Agent quick commands
+
+```bash
+biagio new page blog/[slug]     # scaffold dynamic page
+biagio new island counter       # scaffold client island
+biagio explain index.page.biagio  # hydration plan without full build
+biagio doctor .                 # pre-deploy validation
+```

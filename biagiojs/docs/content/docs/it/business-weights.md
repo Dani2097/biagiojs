@@ -3,7 +3,7 @@ title: Pesi business
 description: conversion, seo, interaction e costi — come il framework decide ordine e idratazione.
 order: 5
 priority: 0.9
-lastmod: 2026-07-07
+lastmod: 2026-07-09
 ---
 
 # Pesi business
@@ -16,7 +16,7 @@ Ogni componente dichiara **pesi** (0–1) e **costi** (numerici). Il framework c
 
 | Peso | Cosa controlla |
 |------|----------------|
-| `conversion` | Ordine nel sorgente HTML — ciò che converte arriva prima |
+| `conversion` | Priorità di hydration e preload — e ordine nel sorgente HTML con `contentOrder: 'priority'` |
 | `seo` | Contenuto SEO-critical, metrica SCRT |
 | `interaction` | Probabilità che l'utente interagisca → idratazione |
 | `cpu` | Costo rendering (1–10) |
@@ -44,7 +44,18 @@ Non inventare numeri a caso. Usa questa tabella come guida:
 
 **Rete:** `priorità = businessValue / networkCost_KB`
 
-`businessValue` è una combinazione pesata di conversion e seo.
+`businessValue` combina i tre segnali tramite `BUSINESS_WEIGHTS`:
+
+```
+businessValue = 0.6 × conversion + 0.25 × seo + 0.15 × interaction
+```
+
+I coefficienti sono un knob documentato e sovrascrivibile — non numeri magici. Si sovrascrivono globalmente con `site.weights` (normalizzati a somma 1) e l'optimizer li ricalibra sui dati di campo:
+
+```js
+// biagio.config.js
+site: { weights: { conversion: 0.7, seo: 0.2, interaction: 0.1 } }
+```
 
 ## Esempio concreto
 
@@ -73,3 +84,19 @@ Il file `reports/crux.json` alimenta soglie più conservative su connessioni len
 > Statico è il default desiderabile. Ogni `hydrate` deve giustificarsi con un'interazione reale.
 
 Prova il playground interattivo sulla [homepage](/it/) — muovi i cursori e guarda il piano cambiare in tempo reale.
+
+## Weights inspector (dev)
+
+In `biagio dev`, ogni pagina con `overlay: true` (default in dev) mostra il pannello **Weights inspector** (in alto a destra):
+
+- Slider per `conversion`, `seo`, `interaction` per componente
+- Piano eager / lazy / static in tempo reale
+- **Esporta** copia snippet pesi negli appunti
+
+## Analisi senza build
+
+```bash
+biagio explain pages/index.page.js
+```
+
+Stampa render order, tier di idratazione e KB isole stimate per un singolo file.

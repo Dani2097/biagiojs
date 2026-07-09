@@ -48,10 +48,12 @@
     "./adapters/vercel": "./src/adapters/vercel.js",
     "./adapters/cloudflare": "./src/adapters/cloudflare.js",
     "./doctor": "./src/core/doctor.js",
+    "./favicon": "./src/core/favicon.js",
     "./analyze": "./src/core/analyze.js",
     "./types": "./types/index.d.ts",
     "./consent": "./src/core/consent.js",
-    "./server-render": "./src/server-render.js"
+    "./server-render": "./src/server-render.js",
+    "./scaffold": "./src/scaffold-export.js"
   },
   "scripts": {
     "build": "node src/cli.js build demo",

@@ -1,14 +1,14 @@
-# Deploy e cache — Cloudflare Pages / Netlify
+# Deploy and cache — Cloudflare Pages / Netlify
 
-> Parte della documentazione [biagiojs](./README.md). Config immagini: [IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md).
+> Part of the [biagiojs](./README.md) documentation. Image config: [IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md).
 
-biagiojs può generare `dist/_headers` automaticamente con `site.cache` in `biagio.config.js`.
+biagiojs can generate `dist/_headers` automatically from `site.cache` in `biagio.config.js`.
 
 ---
 
-## Perché `! Cache-Control`
+## Why `! Cache-Control`
 
-Su **Cloudflare Pages**, le regole in `_headers` **si cumulano**, non si sovrascrivono:
+On **Cloudflare Pages**, rules in `_headers` **accumulate** — they don't override:
 
 ```
 /*
@@ -18,29 +18,29 @@ Su **Cloudflare Pages**, le regole in `_headers` **si cumulano**, non si sovrasc
   Cache-Control: public, max-age=31536000, immutable
 ```
 
-`/img/hero-960w.avif` riceve **entrambe** le direttive. Il browser può applicare la meno restrittiva (`max-age=3600`) — asset statici con cache di 1 ora invece di 1 anno.
+`/img/hero-960w.avif` receives **both** directives. The browser may apply the least restrictive one (`max-age=3600`) — static assets cached for 1 hour instead of 1 year.
 
-### Soluzione
+### Solution
 
-Cloudflare e Netlify supportano il prefisso `!` per forzare un header:
+Cloudflare and Netlify support the `!` prefix to force a header:
 
 ```
 /img/*
   ! Cache-Control: public, max-age=31536000, immutable
 ```
 
-Il template `create-biagiojs` e `site.cache` usano questo pattern.
+The `create-biagiojs` template and `site.cache` use this pattern.
 
 ---
 
-## Configurazione (`site.cache`)
+## Configuration (`site.cache`)
 
 ```js
 // biagio.config.js
 export default {
   site: {
     cache: true,
-    // oppure override:
+    // or override:
     // cache: {
     //   immutable: ['/img/*', '/fonts/*', '/islands/*'],
     //   html: '/*.html',
@@ -51,46 +51,46 @@ export default {
 };
 ```
 
-`biagio build` scrive `dist/_headers` **dopo** la copia di `public/`.
+`biagio build` writes `dist/_headers` **after** copying `public/`.
 
-| Fase build | Effetto |
-|------------|---------|
-| 1. `public/` → `dist/` | Il tuo `_headers` manuale |
-| 2. `site.cache` attivo | Rigenera `dist/_headers` con regole corrette |
+| Build step | Effect |
+|------------|--------|
+| 1. `public/` → `dist/` | Your manual `_headers` |
+| 2. `site.cache` enabled | Regenerates `dist/_headers` with correct rules |
 
-Per regole custom miste: eccezioni in `public/_headers` e `site.cache: false`, oppure estendi `site.cache.immutable`.
+For mixed custom rules: put exceptions in `public/_headers` and set `site.cache: false`, or extend `site.cache.immutable`.
 
 ---
 
 ## Cloudflare Pages
 
-| Impostazione | Valore |
-|--------------|--------|
-| Build command | `npm run build` o `biagio build .` |
+| Setting | Value |
+|---------|-------|
+| Build command | `npm run build` or `biagio build .` |
 | Output directory | `dist` |
 | Node version | ≥ 18 |
 
-Siti 100% statici: nessun Worker necessario — carica solo `dist/`.
+Fully static sites: no Worker needed — just upload `dist/`.
 
 ---
 
 ## Netlify
 
-Stesso principio: `_headers` in `dist/` o `public/`. Usa `! Cache-Control` per asset immutabili.
+Same principle: `_headers` in `dist/` or `public/`. Use `! Cache-Control` for immutable assets.
 
 ---
 
-## Checklist pre-deploy
+## Pre-deploy checklist
 
-- [ ] `/img/`, `/fonts/`, `/islands/` con `! Cache-Control: immutable`
-- [ ] HTML con `max-age=0, must-revalidate`
-- [ ] Nessuna regola `/*` con cache breve senza `!` sugli asset
-- [ ] `biagio build --clean` per evitare file orfani in `dist/img/`
-- [ ] Validazione immagini senza errori (vedi IMAGE-OPTIMIZATION.md)
+- [ ] `/img/`, `/fonts/`, `/islands/` with `! Cache-Control: immutable`
+- [ ] HTML with `max-age=0, must-revalidate`
+- [ ] No `/*` rule with a short cache and no `!` on assets
+- [ ] `biagio build --clean` to avoid orphan files in `dist/img/`
+- [ ] Image validation passes with no errors (see IMAGE-OPTIMIZATION.md)
 
 ---
 
-## Riferimenti
+## References
 
 - [Cloudflare Pages headers](https://developers.cloudflare.com/pages/configuration/headers/)
 - [Netlify _headers](https://docs.netlify.com/routing/headers/)

@@ -3,7 +3,7 @@ title: Per cominciare
 description: Tre comandi per avere un sito biagiojs in locale. Config, pagine, build.
 order: 1
 priority: 0.95
-lastmod: 2026-07-07
+lastmod: 2026-07-09
 ---
 
 # Per cominciare
@@ -14,11 +14,18 @@ Tre comandi e hai un sito in locale. `create-biagiojs` fa il lavoro sporco; tu a
 
 ```bash
 npx create-biagiojs mio-sito
+# oppure con template:
+npx create-biagiojs mio-sito --template blog
+```
+
+Template: `default`, `blog`, `landing`, `shop`, `docs`.
+
+```bash
 cd mio-sito && npm install
 npm run dev
 ```
 
-Il dev server parte su **http://localhost:4321**. Se hai `vite` in devDependencies ottieni HMR e supporto TypeScript; altrimenti c'è un fallback integrato con live reload.
+Il dev server parte su **http://localhost:4321**. Con `vite` ottieni HMR e TypeScript; altrimenti fallback integrato con **rebuild incrementale**, overlay CWV e weights inspector.
 
 ## Primo build
 
@@ -26,20 +33,22 @@ Il dev server parte su **http://localhost:4321**. Se hai `vite` in devDependenci
 npm run build
 ```
 
-L'output finisce in `dist/`: HTML statico, sitemap, robots, immagini ottimizzate. Puoi servirlo da qualsiasi CDN.
+L'output finisce in `dist/`: HTML statico, sitemap, robots, immagini ottimizzate.
 
-## Config minima
+## Config con IntelliSense
 
-Crea `biagio.config.js` nella root del progetto:
+Crea `biagio.config.js` nella root:
 
 ```js
-export default {
+import { defineConfig } from 'biagiojs/config';
+
+export default defineConfig({
   site: {
     name: 'Il Mio Sito',
-    baseUrl: 'https://biagio.danilosprovieri.com',  // importante: alimenta canonical, OG, sitemap
+    baseUrl: 'https://tuosito.com',  // canonical, OG, sitemap
     description: 'Un sito costruito con biagiojs',
   },
-};
+});
 ```
 
 Per TypeScript: `biagio.config.ts` (serve `esbuild` o `vite` in devDependencies).
@@ -60,18 +69,29 @@ Il modo più rapido è un file `.biagio` in `pages/`:
 
 Salva come `pages/index.page.biagio` → route `/`.
 
+Oppure:
+
+```bash
+biagio new page about
+biagio new page blog/[slug]
+```
+
 ## Comandi utili
 
 | Comando | Cosa fa |
 |---------|---------|
-| `biagio dev .` | Dev server |
+| `biagio dev .` | Dev server (rebuild incrementale in fallback) |
 | `biagio build .` | Build produzione |
-| `biagio doctor .` | Valida config, sharp, pagine |
+| `biagio explain index.page.biagio` | Render order + piano idratazione per una pagina |
+| `biagio doctor .` | Valida config, sharp, pagine, link |
 | `biagio analyze .` | Report pesi post-build |
 | `biagio preview .` | Server Node con gzip/br |
+| `biagio new island counter` | Crea `islands/counter.js` |
 
 ## Prossimi passi
 
-- Leggi la [struttura progetto](/it/docs/project-structure/)
-- Impara la [sintassi .biagio](/it/docs/syntax-biagio/)
-- Assegna i [pesi business](/it/docs/business-weights/) ai componenti
+- [Struttura progetto](/it/docs/project-structure/)
+- [Sintassi .biagio](/it/docs/syntax-biagio/)
+- [Content collections](/it/docs/content-collections/)
+- [Pesi business](/it/docs/business-weights/)
+- [CLI](/it/docs/cli/)

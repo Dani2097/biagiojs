@@ -6,6 +6,9 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseSubsetConfig } from './font-subset.js';
 import { parseFontInject } from './fonts.js';
+import { parseFavicon } from './favicon.js';
+
+export { defineConfig } from './define-config.js';
 
 export const DEFAULT_IMAGE_WIDTHS = [480, 960, 1440];
 
@@ -91,7 +94,7 @@ export async function loadConfig(root) {
 
   return {
     ...raw,
-    site: { ...site, images, optimize, fonts, cache, sitemap, deploy },
+    site: { ...site, images, optimize, fonts, cache, sitemap, deploy, favicon: parseFavicon(site.favicon, site) },
     images,
     fonts,
     optimize,

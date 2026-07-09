@@ -3,7 +3,7 @@ title: Business weights
 description: conversion, seo, interaction and costs — how the framework decides order and hydration.
 order: 5
 priority: 0.9
-lastmod: 2026-07-07
+lastmod: 2026-07-09
 ---
 
 # Business weights
@@ -16,7 +16,7 @@ Every component declares **weights** (0–1) and **costs** (numeric). The framew
 
 | Weight | What it controls |
 |--------|------------------|
-| `conversion` | Order in HTML source — high-converting content arrives first |
+| `conversion` | Hydration & preload priority — and HTML source order in `contentOrder: 'priority'` |
 | `seo` | SEO-critical content, SCRT metric |
 | `interaction` | User interaction probability → hydration |
 | `cpu` | Render cost (1–10) |
@@ -44,7 +44,18 @@ Don't invent random numbers. Use this guide:
 
 **Network:** `priority = businessValue / networkCost_KB`
 
-`businessValue` is a weighted combination of conversion and seo.
+`businessValue` combines the three signals with `BUSINESS_WEIGHTS`:
+
+```
+businessValue = 0.6 × conversion + 0.25 × seo + 0.15 × interaction
+```
+
+These coefficients are a documented, overridable knob — not magic numbers. Override them globally via `site.weights` (auto-normalized to sum 1), and the optimizer recalibrates them from field data:
+
+```js
+// biagio.config.js
+site: { weights: { conversion: 0.7, seo: 0.2, interaction: 0.1 } }
+```
 
 ## Concrete example
 
@@ -70,3 +81,19 @@ biagio pull-vitals https://yoursite.com .
 > Static is the desired default. Every `hydrate` must justify a real interaction.
 
 Try the interactive playground on the [homepage](/) — move the sliders and watch the plan update live.
+
+## Weights inspector (dev)
+
+In `biagio dev`, every page with `overlay: true` (default in dev) shows a **Weights inspector** panel (top-right):
+
+- Sliders for `conversion`, `seo`, `interaction` per component
+- Live eager / lazy / static plan
+- **Export** copies weight snippets to the clipboard
+
+## Analyze without building
+
+```bash
+biagio explain pages/index.page.js
+```
+
+Prints render order, hydration tiers and estimated island KB for a single file.

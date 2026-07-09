@@ -15,7 +15,9 @@ import {
   nodeWrapperAttrs,
   assembleClientRuntime,
   minifyClientRuntime,
+  safeScript,
 } from './core/runtime-bundle.js';
+import { weightsInspectorScript, OVERLAY_PLAN_LISTENER } from './core/dev-overlay.js';
 
 const OVERLAY_RUNTIME = `
 (function(){
@@ -54,7 +56,7 @@ const OVERLAY_RUNTIME = `
 `;
 
 function isInteractive(node) {
-  return (node.hydrate || node.clientModule) && node.hydrateMode !== 'never';
+  return (node.hydrate || node.hydrateSource || node.clientModule) && node.hydrateMode !== 'never';
 }
 
 export async function renderPage(graph, {
@@ -65,8 +67,18 @@ export async function renderPage(graph, {
   thresholds = {},
   islandSources = {},
   minifyRuntime = true,
+  // 'visual' (default, accessibile): DOM in ordine di lettura → tab/screen reader corretti.
+  // 'priority': DOM in ordine di valore-business (utile solo con streaming SSR); l'ordine
+  // visivo è ripristinato via flex `order`, ma tab order segue il DOM → usare consapevolmente.
+  contentOrder = 'visual',
 } = {}) {
-  const order = renderOrder(graph);
+  // La priorità business guida SEMPRE hydration e preload (dove il guadagno Web Vitals è
+  // reale e sicuro). L'ordine del DOM invece è accessibile di default.
+  const priorityOrder = renderOrder(graph);
+  const order = contentOrder === 'priority'
+    ? priorityOrder
+    : [...graph.nodes.values()].sort((a, b) => (a.domOrder ?? 0) - (b.domOrder ?? 0));
+  const emitVisualOrder = contentOrder === 'priority';
   const plan = hydrationPlan(graph, thresholds);
   const autoSeo = site && page ? seoHead(site, page) : '';
   const fonts = site ? fontHead(site) : '';
@@ -76,7 +88,7 @@ export async function renderPage(graph, {
 
   const body = order.map(node => {
     const interactive = isInteractive(node);
-    const attrs = nodeWrapperAttrs(node, { interactive, overlay });
+    const attrs = nodeWrapperAttrs(node, { interactive, overlay, emitVisualOrder });
     const content = node.render();
     // Nodo statico "nudo" (niente id, order, marker): il wrapper <div> è puro
     // overhead → si emette il contenuto diretto come figlio flex di <main>.
@@ -87,9 +99,12 @@ export async function renderPage(graph, {
   const islands = interactiveNodes
     .map(n => {
       if (!n.clientModule) {
+        // sorgente grezza dal compiler .biagio → nessun round-trip via Function.prototype.toString
+        // (robusto a engine/minifier); fallback a .toString() per funzioni da .page.js.
+        const fnSrc = n.hydrateSource != null ? `function(el){${n.hydrateSource}}` : n.hydrate.toString();
         return n.consent
-          ? `"${n.id}": {"c": ${JSON.stringify(n.consent)}, "f": ${n.hydrate.toString()}}`
-          : `"${n.id}": ${n.hydrate.toString()}`;
+          ? `"${n.id}": {"c": ${JSON.stringify(n.consent)}, "f": ${fnSrc}}`
+          : `"${n.id}": ${fnSrc}`;
       }
       const c = n.consent ? `"c": ${JSON.stringify(n.consent)}, ` : '';
       if (n.hydrateMode === 'inline' && islandSources[n.clientModule]) {
@@ -112,6 +127,15 @@ export async function renderPage(graph, {
   const planJson = compactPlan(plan);
   const includeSignals = needsSignalsRuntime(interactiveNodes, islandSources);
 
+  const weightsNodes = overlay ? [...graph.nodes.values()].map(n => ({
+    id: n.id,
+    c: n.conversionWeight,
+    s: n.seoWeight,
+    i: n.interactionProbability,
+    h: !!(n.hydrate || n.hydrateSource || n.clientModule),
+    m: n.hydrateMode || null,
+  })) : null;
+
   let runtimeScript = '';
   if (hasIslands) {
     let bundle = assembleClientRuntime({
@@ -122,9 +146,9 @@ export async function renderPage(graph, {
       includeMetrics: overlay,
     });
     if (minifyRuntime) bundle = await minifyClientRuntime(bundle);
-    runtimeScript = `<script>${bundle}<\/script>`;
+    runtimeScript = `<script>${safeScript(bundle)}<\/script>`;
   } else if (overlay) {
-    runtimeScript = `<script>window.__CVW_PLAN__=${planJson};<\/script>`;
+    runtimeScript = `<script>window.__CVW_PLAN__=${safeScript(planJson)};<\/script>`;
   }
 
   return `<!doctype html>
@@ -149,7 +173,7 @@ ${consent.body}
 ${experiments ? experiments.beacon() : ''}
 ${runtimeScript}
 ${overlay ? `${hasIslands ? '' : `<script>${METRICS_RUNTIME}<\/script>`}<script>${WEBVITALS_RUNTIME}<\/script>
-<script>${OVERLAY_RUNTIME}<\/script>` : ''}
+<script>${OVERLAY_RUNTIME}<\/script>${weightsNodes ? `<script>${safeScript(weightsInspectorScript(JSON.stringify(weightsNodes), JSON.stringify({ eager: thresholds.eagerThreshold ?? 0.3, lazy: thresholds.lazyThreshold ?? 0.05 })))}<\/script><script>${OVERLAY_PLAN_LISTENER}<\/script>` : ''}` : ''}
 </body>
 </html>`;
 }

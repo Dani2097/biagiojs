@@ -25,6 +25,7 @@ export function planCounts(plan) {
 
 export function needsSignalsRuntime(interactiveNodes, islandSources = {}) {
   for (const n of interactiveNodes) {
+    if (n.hydrateSource && SIGNALS_RE.test(n.hydrateSource)) return true;
     if (n.hydrate && SIGNALS_RE.test(n.hydrate.toString())) return true;
   }
   for (const code of Object.values(islandSources)) {
@@ -51,7 +52,7 @@ function unwrapIife(src) {
  * I marker metrici `data-cvw-conversion/seo` li leggono solo overlay/metriche (dev),
  * che in produzione non vengono spediti → si emettono solo con `overlay` attivo.
  */
-export function nodeWrapperAttrs(node, { interactive, overlay = false }) {
+export function nodeWrapperAttrs(node, { interactive, overlay = false, emitVisualOrder = false }) {
   const parts = [];
   if (interactive) {
     parts.push(`data-cvw-id="${node.id}"`);
@@ -59,9 +60,22 @@ export function nodeWrapperAttrs(node, { interactive, overlay = false }) {
   }
   if (overlay && node.conversionWeight >= 0.7) parts.push('data-cvw-conversion="high"');
   if (overlay && node.seoWeight >= 0.7) parts.push('data-cvw-seo="high"');
-  const o = node.domOrder ?? 0;
-  if (o !== 0) parts.push(`style="order:${o}"`);
+  // `style:order` serve SOLO quando il DOM è in ordine di priorità (contentOrder:'priority')
+  // e va ripristinato l'ordine visivo. In modalità accessibile (default) il DOM è già
+  // in ordine di lettura → nessun flex order (che comunque non sistema tab/screen reader).
+  if (emitVisualOrder) {
+    const o = node.domOrder ?? 0;
+    if (o !== 0) parts.push(`style="order:${o}"`);
+  }
   return parts.length ? ' ' + parts.join(' ') : '';
+}
+
+/**
+ * Neutralizza sequenze `</script` in contenuto iniettato inline in un tag <script>,
+ * evitando il break-out del tag (island hydrate, props JSON, piani, ecc.).
+ */
+export function safeScript(js) {
+  return String(js).replace(/<\/(script)/gi, '<\\/$1');
 }
 
 /**

@@ -13,6 +13,7 @@
   "homepage": "https://github.com/Dani2097/biagiojs/tree/main/create-biagiojs",
   "author": "Danilo Sprovieri <danilo.sprovieri9@gmail.com>",
   "engines": { "node": ">=18" },
+  "dependencies": { "biagiojs": "^0.10.1" },
   "keywords": ["biagiojs", "create", "scaffold", "framework"],
   "license": "MIT"
 }

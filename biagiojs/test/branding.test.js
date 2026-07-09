@@ -77,11 +77,11 @@ test('font subset: scan include testo da pages/*.page.biagio', () => {
   assert.match(text, /Žlutý biagiojs/);
 });
 
-test('create-biagiojs scaffold standalone: dipende da biagiojs', () => {
+test('create-biagiojs scaffold standalone: delega a biagiojs/scaffold', () => {
   const scaffold = read('../create-biagiojs/index.js');
-  assert.match(scaffold, /'biagiojs': '\^0\.10\.1'/);
-  assert.match(scaffold, /biagio\.config\.js/);
-  assert.match(scaffold, /index\.page\.biagio/);
+  assert.match(scaffold, /from 'biagiojs\/scaffold'/);
+  assert.match(scaffold, /--template/);
+  assert.match(scaffold, /await create\(dir, \{ template \}\)/);
   assert.doesNotMatch(scaffold, /cvw-first|cvw\.config/);
 });
 

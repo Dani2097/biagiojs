@@ -1,0 +1,26 @@
+{
+  "name": "biagiojs",
+  "displayName": "biagiojs",
+  "description": "Syntax highlight, snippets e autocomplete per file .biagio",
+  "version": "0.1.0",
+  "publisher": "biagiojs",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Programming Languages", "Snippets"],
+  "contributes": {
+    "languages": [{
+      "id": "biagio",
+      "aliases": ["biagio", "biagiojs"],
+      "extensions": [".biagio"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "biagio",
+      "scopeName": "source.biagio",
+      "path": "./syntaxes/biagio.tmLanguage.json"
+    }],
+    "snippets": [{
+      "language": "biagio",
+      "path": "./snippets/biagio.json"
+    }]
+  }
+}

@@ -1,9 +1,89 @@
 /**
  * biagiojs — Content collections (Markdown + frontmatter), stile Astro.
+ * Schema opzionale in content.config.js con defineCollection().
  */
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
-import { join, parse } from 'node:path';
+import { join, parse, dirname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { escapeHtml, safeUrl } from './html.js';
+
+const FIELD_TYPES = new Set(['string', 'number', 'boolean', 'date']);
+
+/** @typedef {{ type?: string, required?: boolean, default?: unknown }} FieldSchema */
+
+let _schemas = null;
+let _schemasRoot = null;
+
+/**
+ * Definisce una collection con schema frontmatter.
+ * @param {{ schema?: Record<string, FieldSchema> }} def
+ */
+export function defineCollection(def = {}) {
+  return { schema: def.schema || {} };
+}
+
+async function loadSchemas(root) {
+  if (_schemas && _schemasRoot === root) return _schemas;
+  _schemasRoot = root;
+  _schemas = {};
+  const cfgPath = join(root, 'content.config.js');
+  if (!existsSync(cfgPath)) return _schemas;
+  try {
+    const mod = await import(pathToFileURL(cfgPath).href + '?t=' + Date.now());
+    for (const [name, def] of Object.entries(mod.collections || {})) {
+      _schemas[name] = def?.schema || {};
+    }
+  } catch { /* config opzionale */ }
+  return _schemas;
+}
+
+/** Reset cache (test). */
+export function _resetCollectionCache() {
+  _schemas = null;
+  _schemasRoot = null;
+}
+
+function coerceValue(raw, type) {
+  if (type === 'boolean') {
+    if (raw === true || raw === false) return raw;
+    if (raw === 'true') return true;
+    if (raw === 'false') return false;
+    return Boolean(raw);
+  }
+  if (type === 'number') {
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : raw;
+  }
+  return raw;
+}
+
+function validateEntry(collectionName, data, schema, filePath) {
+  if (!schema || !Object.keys(schema).length) return data;
+  const out = { ...data };
+  for (const [key, rule] of Object.entries(schema)) {
+    const type = rule.type || 'string';
+    if (!FIELD_TYPES.has(type)) continue;
+    if (out[key] === undefined || out[key] === '') {
+      if (rule.required) throw new Error(`[content] ${filePath}: campo obbligatorio "${key}" mancante`);
+      if ('default' in rule) out[key] = rule.default;
+      continue;
+    }
+    out[key] = coerceValue(out[key], type);
+    if (type === 'number' && typeof out[key] !== 'number') {
+      throw new Error(`[content] ${filePath}: "${key}" deve essere number`);
+    }
+    if (type === 'date' && Number.isNaN(new Date(out[key]).getTime())) {
+      throw new Error(`[content] ${filePath}: "${key}" deve essere una data valida (ISO)`);
+    }
+  }
+  return out;
+}
+
+function collectionNameFromDir(dir, root) {
+  const rel = dir.replace(/\\/g, '/');
+  const m = rel.match(/content\/([^/]+)/);
+  return m?.[1] || null;
+}
 
 function parseFrontmatter(src) {
   const m = src.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
@@ -103,16 +183,65 @@ export function markdownToHtml(md) {
   return out.join('\n');
 }
 
-/** Carica una collection di .md. Con locale: usa dir/<locale>/ se esiste (fallback: dir). */
-export function getCollection(dir, locale) {
+/**
+ * Carica una collection di .md.
+ * Con locale: usa dir/<locale>/ se esiste (fallback: dir).
+ * @param {string} dir — es. content/blog
+ * @param {string|null} locale
+ * @param {{ includeDrafts?: boolean, root?: string }} [opts]
+ */
+export function getCollection(dir, locale, { includeDrafts, root } = {}) {
+  const prod = process.env.NODE_ENV === 'production' && includeDrafts !== true;
   if (locale && existsSync(join(dir, locale))) dir = join(dir, locale);
   if (!existsSync(dir)) return [];
+
+  const collectionRoot = root || (() => {
+    let d = dir;
+    while (d && !existsSync(join(d, 'content.config.js')) && dirname(d) !== d) d = dirname(d);
+    return existsSync(join(d, 'content.config.js')) ? d : join(dir, '..', '..');
+  })();
+
+  const name = collectionNameFromDir(dir, collectionRoot);
+
   return readdirSync(dir).filter(f => f.endsWith('.md')).map(f => {
-    const src = readFileSync(join(dir, f), 'utf8');
+    const filePath = join(dir, f);
+    const src = readFileSync(filePath, 'utf8');
     const { data, body } = parseFrontmatter(src);
-    return { slug: data.slug || parse(f).name, data, html: markdownToHtml(body), raw: body };
-  }).sort((a, b) => {
+    let validated = data;
+    if (name && _schemas?.[name]) {
+      validated = validateEntry(name, data, _schemas[name], filePath);
+    }
+    if (prod && validated.draft === true) return null;
+    return {
+      slug: validated.slug || parse(f).name,
+      data: validated,
+      html: markdownToHtml(body),
+      raw: body,
+      draft: validated.draft === true,
+    };
+  }).filter(Boolean).sort((a, b) => {
     if (a.data.order != null || b.data.order != null) return (a.data.order ?? 999) - (b.data.order ?? 999);
     return (b.data.date || '').localeCompare?.(a.data.date || '') || 0;
   });
+}
+
+/** Versione async con caricamento schema. */
+export async function getCollectionAsync(dir, locale, opts = {}) {
+  const collectionRoot = opts.root || resolveContentRoot(dir);
+  await loadSchemas(collectionRoot);
+  return getCollection(dir, locale, { ...opts, root: collectionRoot });
+}
+
+function resolveContentRoot(dir) {
+  let d = dir;
+  for (let i = 0; i < 5 && d; i++) {
+    if (existsSync(join(d, 'content.config.js'))) return d;
+    d = dirname(d);
+  }
+  return dirname(dirname(dir));
+}
+
+/** Precarica schema (chiamato dal build). */
+export async function preloadContentSchemas(root) {
+  return loadSchemas(root);
 }

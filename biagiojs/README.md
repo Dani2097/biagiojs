@@ -31,6 +31,7 @@ Where other frameworks ask *“how do we render faster?”*, biagiojs asks *“w
 
 ```bash
 npx create-biagiojs my-site
+# or: npx create-biagiojs my-site --template blog|landing|docs|shop
 cd my-site && npm install && npm run dev   # → http://localhost:4321
 ```
 
@@ -48,7 +49,7 @@ Every component declares **business weights** alongside technical costs. The fra
 
 | You declare | Framework decides |
 |-------------|-------------------|
-| `conversion` (0–1) | Order in HTML source (high-converting content hits the wire first) |
+| `conversion` (0–1) | Hydration & preload priority (and HTML source order with `contentOrder: 'priority'`) |
 | `seo` (0–1) | SEO-critical content, SCRT metric |
 | `interaction` (0–1) | **eager** / **lazy** / **static** islands (JS never shipped) |
 | `cpu`, `network` (costs) | Priority = value/cost; preload ordered by value/KB |
@@ -56,6 +57,10 @@ Every component declares **business weights** alongside technical costs. The fra
 A 300 KB chat widget with `conversion="0.05"` stays static HTML. A CTA with `conversion="1"` hydrates first.
 
 **Golden rule:** static is the desired default. In production, a page without islands ships **zero JavaScript**.
+
+**Accessible by default:** the DOM is emitted in reading order, so keyboard and screen-reader order match the visual layout (WCAG 2.4.3 / 1.3.2). Business priority still drives hydration and preload. Opt into source-order reordering (for streaming SSR) with `contentOrder: 'priority'`.
+
+**Weights are a documented knob, not magic numbers:** `businessValue = 0.6·conversion + 0.25·seo + 0.15·interaction` (`BUSINESS_WEIGHTS`), overridable via `site.weights` and recalibrated from field data by the optimizer.
 
 ---
 
@@ -88,15 +93,17 @@ npm i -D subset-font         # only if site.fonts.subset is enabled
 
 | Command | Description |
 |---------|-------------|
-| `npx biagio dev .` | Dev server (Vite if installed, otherwise built-in fallback) |
+| `npx biagio dev .` | Dev server (incremental rebuild, CWV + weights overlay in fallback mode) |
 | `npx biagio build .` | Build → `dist/` |
 | `npx biagio build . --clean` | Clears `dist/img/` before the image pipeline |
 | `npx biagio build . --dryRun` | Plans image buckets without writing files |
-| `npx biagio doctor .` | Project validation (config, sharp, pages, consent) |
+| `npx biagio explain <page>` | Render order + hydration plan for one page (no full build) |
+| `npx biagio new page\|island\|collection <name>` | Scaffold pages, islands or collections |
+| `npx biagio doctor .` | Project validation (config, sharp, pages, links, consent) |
 | `npx biagio analyze .` | Post-build HTML/JS weight report → `dist/.biagio-analyze.json` |
 | `npx biagio preview . [port]` | Node production server (static + ISR + SSR, gzip/br) |
 | `npx biagio pull-vitals <url> .` | CrUX/Lighthouse → `reports/crux.json` |
-| `npx create-biagiojs <dir>` | Scaffold a new site |
+| `npx create-biagiojs <dir> [--template name]` | Scaffold a new site |
 
 TypeScript config: `biagio.config.ts` (requires esbuild or vite in devDependencies).
 
@@ -108,7 +115,8 @@ Deploy presets: set `site.deploy: 'cloudflare' | 'vercel' | 'netlify'` in `biagi
 
 ```
 my-site/
-├── biagio.config.js       # site, images, fonts, cache, consent, hooks
+├── biagio.config.js       # defineConfig({ site, images, fonts, cache, consent, hooks })
+├── content.config.js      # optional: defineCollection schemas
 ├── pages/
 │   ├── index.page.biagio  # → /
 │   ├── about.page.biagio  # → /about/
@@ -193,6 +201,7 @@ export default function ({ props: { post } }) {
 ### SEO, images, network
 
 - **Automatic SEO**: meta, canonical, Open Graph, Twitter, JSON-LD, breadcrumb, `sitemap.xml`, `robots.txt`, favicon, hreflang (multilingual).
+- **Favicon generator** (opt-in): `site.favicon = { source, generate: true }` builds the modern essential set (`.ico`, SVG, Apple touch, PWA icons + `manifest.webmanifest`) at build time from one source. Zero-dependency ICO encoder.
 - **Images**: `smartImage()` with profiles (`hero`, `content`, `thumb`, `full`), `bySlug`, post-build validation. → **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)**
 - **Network**: preload/prefetch ordered by value/KB with budget (default 200 KB).
 
@@ -221,6 +230,8 @@ site: { consent: { mode: 'native', categories: ['analytics', 'marketing'], polic
 ### Dev
 
 - Live Core Web Vitals overlay + business metrics (dev only).
+- **Weights inspector** — adjust component weights in the browser, export snippets.
+- **Incremental rebuild** — only changed pages in dev fallback mode.
 - CFP, FAR, RFI, SCRT, CDI metrics in-page (`cvw:metrics` event).
 
 ---
@@ -248,6 +259,7 @@ site: { consent: { mode: 'native', categories: ['analytics', 'marketing'], polic
 | **[IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md)** | Image pipeline, profiles, `bySlug`, `smartImage()` |
 | **[DEPLOY-CACHE.md](./DEPLOY-CACHE.md)** | `_headers`, `! Cache-Control`, Cloudflare / Netlify |
 | **[CHANGELOG.md](./CHANGELOG.md)** | Version history and release notes |
+| **VS Code extension** | `extensions/vscode-biagio/` — syntax, snippets for `.biagio` |
 
 ### Feedback loop
 

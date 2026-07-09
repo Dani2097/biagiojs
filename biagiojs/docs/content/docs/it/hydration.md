@@ -40,6 +40,12 @@ L'attributo `hydrate` su `<component>` vince sempre sullo scheduler:
 | `idle` | Forza lazy (requestIdleCallback) |
 | `never` | Mai idratare |
 
+## Ordine dei contenuti e accessibilità
+
+La priorità di idratazione qui sopra decide **quando** le isole si idratano e l'ordine di **preload** — non l'ordine fisico del DOM. Di default il DOM è emesso in ordine di lettura (`contentOrder: 'visual'`), così tab order da tastiera e screen reader coincidono col layout visivo (WCAG 2.4.3 / 1.3.2).
+
+Con `contentOrder: 'priority'` il sorgente HTML viene riordinato per valore business (utile con streaming SSR); l'ordine visivo è ripristinato via flex `order` CSS. Compromesso: il flex `order` **non** cambia il tab order né l'ordine per gli screen reader, quindi in questa modalità il focus da tastiera segue l'ordine del sorgente (priorità).
+
 ## Runtime client
 
 In produzione il piano è compatto:

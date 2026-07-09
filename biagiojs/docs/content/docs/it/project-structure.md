@@ -3,14 +3,15 @@ title: Struttura progetto
 description: Cartelle, convenzioni di naming e file di configurazione in un progetto biagiojs.
 order: 2
 priority: 0.85
-lastmod: 2026-07-07
+lastmod: 2026-07-09
 ---
 
 # Struttura progetto
 
 ```
 mio-sito/
-├── biagio.config.js       # site, images, fonts, cache, deploy
+├── biagio.config.js       # defineConfig({ site, hooks })
+├── content.config.js      # opzionale: schema collection tipizzate
 ├── pages/                 # una pagina per file → route automatica
 │   ├── index.page.biagio  # → /
 │   ├── about.page.biagio  # → /about/
@@ -31,8 +32,8 @@ Il nome del file è la route:
 | File | URL |
 |------|-----|
 | `pages/index.page.biagio` | `/` |
-| `pages/chi-siamo.page.biagio` | `/chi-siamo/` |
-| `pages/blog/[slug].page.js` | `/blog/<slug>/` per ogni `getStaticPaths()` |
+| `pages/about.page.biagio` | `/about/` |
+| `pages/blog/[slug].page.js` | `/blog/<slug>/` via `getStaticPaths()` |
 
 Estensioni supportate: `.page.biagio`, `.page.js`, `.page.ts`.
 
@@ -45,47 +46,42 @@ Con `site.locales: ['en', 'it']` e `defaultLocale: 'en'`:
 | `pages/index.page.js` | `/` | `/it/` |
 | `pages/docs/index.page.js` | `/docs/` | `/it/docs/` |
 
-Traduzioni UI in `locales/<lang>.json`. Le content collection usano `content/blog/` (default) e `content/blog/it/` (italiano).
+Traduzioni in `locales/<lang>.json`. Collection per lingua: `content/blog/it/`.
 
 ## Config (`biagio.config.js`)
 
+Usa `defineConfig` per IntelliSense:
+
+```js
+import { defineConfig } from 'biagiojs/config';
+
+export default defineConfig({
+  site: {
+    name: 'Il Mio Sito',
+    baseUrl: 'https://example.com',
+    // images, fonts, cache, deploy, consent, locales…
+  },
+});
+```
+
 | Chiave | Scopo |
 |--------|-------|
-| `site.name` | Nome sito, meta title fallback |
+| `site.name` | Nome sito, fallback title |
 | `site.baseUrl` | Canonical, sitemap, Open Graph |
-| `site.locales` | Lista lingue per i18n |
-| `site.defaultLocale` | Lingua senza prefisso URL |
+| `site.locales` | Lingue per i18n |
+| `site.defaultLocale` | Locale senza prefisso URL |
 | `site.images` | Pipeline sharp, profili, remote |
-| `site.fonts` | Google Fonts self-hosted, subset |
 | `site.cache` | Genera `dist/_headers` per CDN |
 | `site.deploy` | Preset Cloudflare / Vercel / Netlify |
-| `site.consent` | Banner GDPR nativo o vendor |
-| `site.locales` | i18n con route `/en/…` |
 | `hooks` | beforeImages, head, afterFonts… |
 
 ## Content collections
 
-Markdown in `content/<nome>/` con frontmatter YAML:
+Vedi [Content collections](/it/docs/content-collections/) per frontmatter tipizzato, `draft: true` e `getCollection()`.
 
-```md
----
-title: Il mio articolo
-date: 2026-07-07
-slug: mio-articolo
----
-
-# Contenuto
-```
-
-Caricamento in pagine dinamiche:
-
-```js
-export function getStaticPaths({ getCollection }) {
-  return getCollection('content/blog').map(p => ({
-    params: { slug: p.slug },
-    props: { post: p },
-  }));
-}
+```bash
+biagio new collection blog
+biagio new page blog/[slug]
 ```
 
 ## Dipendenze consigliate
@@ -95,4 +91,4 @@ npm i -D sharp vite    # immagini + dev con HMR
 npm i -D subset-font   # solo se site.fonts.subset è attivo
 ```
 
-`biagiojs` stesso non ha dipendenze obbligatorie in runtime.
+`biagiojs` non ha dipendenze runtime obbligatorie.

@@ -71,7 +71,7 @@ Strings live in `locales/en.json`, `locales/it.json`, etc.
 | Attribute | Range | Effect |
 |-----------|-------|--------|
 | `seo` | 0–1 | SEO-critical content priority |
-| `conversion` | 0–1 | Order in HTML source |
+| `conversion` | 0–1 | Hydration & preload priority |
 | `interaction` | 0–1 | Hydration probability |
 | `cpu` | 1–10 | Render cost |
 | `network` | KB | Network cost for preload |
@@ -95,8 +95,14 @@ The module in `islands/` exports `default function (el, props) { … }`.
 
 ## Visual order vs render order
 
-File order sets CSS layout (`domOrder`). **HTML render order** is decided by the scheduler from weights — a CTA with `conversion="1"` can appear earlier in source even if lower in the file.
+By default the DOM is emitted in **file (reading) order**, so visual, keyboard and screen-reader order all match (WCAG 2.4.3 / 1.3.2). Business weights drive **hydration and preload** priority — not the physical DOM order.
+
+Pass `contentOrder: 'priority'` to `renderPage` to reorder the HTML source by business value (a CTA with `conversion="1"` can appear earlier in source), restoring the visual order via CSS flex `order`. This helps streaming SSR, but flex `order` doesn't change tab/AT order — use it deliberately.
 
 ## CSS
 
 The `<style>` block is purged and minified at build. Unused classes not in the visible DOM are removed (integrated PurgeCSS).
+
+## Robust parsing
+
+The `.biagio` compiler is a quote-aware tokenizer, not a chain of regexes. It handles `>` inside attribute values (e.g. JSON `props`), nested `<template>`, top-level HTML comments (a commented-out `<component>` is ignored), and multiple `<style>` blocks. Inline `hydrate` scripts are emitted from their raw source — no `Function.prototype.toString` round-trip — and any `</script>` inside them is neutralized so it can't break out of the tag.

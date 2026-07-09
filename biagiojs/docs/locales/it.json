@@ -18,6 +18,7 @@
       "project-structure": "Struttura progetto",
       "syntax-biagio": "File .biagio",
       "syntax-javascript": "JavaScript & TypeScript",
+      "content-collections": "Content collections",
       "business-weights": "Pesi business",
       "hydration": "Idratazione adattiva",
       "seo": "SEO automatica",
@@ -36,6 +37,7 @@
       "project-structure": "cartelle, routing, convenzioni",
       "syntax-biagio": "pagine dichiarative, pesi business",
       "syntax-javascript": "graph API, SSR, route dinamiche",
+      "content-collections": "frontmatter tipizzato, draft",
       "business-weights": "conversion, seo, interaction",
       "hydration": "eager, lazy, static",
       "seo": "meta, JSON-LD, hreflang",
@@ -45,7 +47,7 @@
       "consent": "banner nativo, Cookiebot, Iubenda",
       "optimization": "CrUX, report, test A/B",
       "deploy": "CDN, preset, headers",
-      "cli": "build, dev, doctor, analyze",
+      "cli": "build, dev, doctor, explain, new",
       "ai-agents": "llms.txt, AI-GUIDE, workflow agenti",
       "changelog": "note di rilascio"
     }

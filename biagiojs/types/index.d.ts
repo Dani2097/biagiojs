@@ -90,6 +90,10 @@ export class PerformanceGraph {
 
 export function loadConfig(root: string): Promise<BiagioConfig & { images: BiagioSiteConfig['images']; fonts: BiagioSiteConfig['fonts']; optimize: BiagioSiteConfig['optimize']; cache: BiagioSiteConfig['cache']; deploy: string | null }>;
 
+export function defineConfig<T extends BiagioConfig>(config: T): T;
+
+export function defineCollection(def?: { schema?: Record<string, { type?: string; required?: boolean; default?: unknown }> }): { schema: Record<string, unknown> };
+
 export function runDoctor(root: string): Promise<{ ok: boolean; errors: string[]; warnings: string[] }>;
 
 export function analyzeDist(root: string): {

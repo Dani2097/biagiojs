@@ -3,14 +3,15 @@ title: Project structure
 description: Folders, naming conventions and config files in a biagiojs project.
 order: 2
 priority: 0.85
-lastmod: 2026-07-07
+lastmod: 2026-07-09
 ---
 
 # Project structure
 
 ```
 my-site/
-├── biagio.config.js       # site, images, fonts, cache, deploy
+├── biagio.config.js       # defineConfig({ site, hooks })
+├── content.config.js      # optional: typed collection schemas
 ├── pages/                 # one file per page → automatic routes
 │   ├── index.page.biagio  # → /
 │   ├── about.page.biagio  # → /about/
@@ -49,6 +50,20 @@ Translations live in `locales/<lang>.json`. Content collections can use `content
 
 ## Config (`biagio.config.js`)
 
+Use `defineConfig` for IntelliSense:
+
+```js
+import { defineConfig } from 'biagiojs/config';
+
+export default defineConfig({
+  site: {
+    name: 'My Site',
+    baseUrl: 'https://example.com',
+    // images, fonts, cache, deploy, consent, locales…
+  },
+});
+```
+
 | Key | Purpose |
 |-----|---------|
 | `site.name` | Site name, meta title fallback |
@@ -62,25 +77,13 @@ Translations live in `locales/<lang>.json`. Content collections can use `content
 
 ## Content collections
 
-Markdown in `content/<name>/` with YAML frontmatter:
+See [Content collections](/docs/content-collections/) for typed frontmatter, `draft: true` and `getCollection()`.
 
-```md
----
-title: My article
-date: 2026-07-07
-slug: my-article
----
+Quick scaffold:
 
-# Content
-```
-
-```js
-export function getStaticPaths({ getCollection }) {
-  return getCollection('content/blog').map(p => ({
-    params: { slug: p.slug },
-    props: { post: p },
-  }));
-}
+```bash
+biagio new collection blog
+biagio new page blog/[slug]
 ```
 
 ## Recommended dependencies

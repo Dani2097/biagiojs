@@ -1,143 +1,173 @@
 # Changelog — biagiojs
 
-Tutte le modifiche rilevanti al framework sono documentate qui.
+All notable changes to the framework are documented here.
 
-Formato basato su [Keep a Changelog](https://keepachangelog.com/). Versioning [SemVer](https://semver.org/).
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning [SemVer](https://semver.org/).
 
 ---
 
-## [Non rilasciato]
+## [Unreleased]
+
+### Added
+
+- **Configurable weights** — `BUSINESS_WEIGHTS` (the `businessValue` coefficients) exported from `biagiojs/graph`, `normalizeBusinessWeights()`, and per-node or config overrides (`site.weights` / `compileBiagio(src, file, { weights })`). The coefficients are no longer magic numbers buried in the code: a single, documented, recalibratable knob.
+- **`renderPage({ contentOrder })`** — `'visual'` (default) or `'priority'`.
+- **Favicon generator (opt-in)** — `site.favicon = { source, generate: true }` builds the modern essential set (`favicon.ico`, `icon.svg`, `apple-touch-icon.png`, PWA `icon-192/512.png` + `manifest.webmanifest`) at build time via sharp, with an inline zero-dependency ICO encoder. Selectable `targets`, idempotent, wired into `doctor`. Enabled by default in the `create-biagiojs` scaffold (ships a placeholder `images/logo.svg`). Module: `biagiojs/favicon`.
+- **`defineConfig()`** — wrapper `import { defineConfig } from 'biagiojs/config'` per IntelliSense su `biagio.config.js`
+- **`biagio new`** — generatori `page`, `island`, `collection` con scheletro e pesi preimpostati
+- **`biagio explain <page>`** — render order, piano hydration e KB isole senza build completo
+- **Rebuild incrementale in dev** — rigenera solo le pagine toccate (fallback full su config/images/islands)
+- **Error overlay migliorato** — file:riga per errori compiler `.biagio` nel dev server integrato
+- **Weights inspector** — slider pesi nell'overlay dev con export negli appunti
+- **Content collections tipizzate** — `content.config.js` + `defineCollection({ schema })`, validazione a build
+- **`draft: true`** — escluso in produzione, visibile in dev
+- **Link & asset checker** — link interni rotti e immagini mancanti (build + doctor)
+- **`create-biagiojs --template`** — `blog|landing|docs|shop`
+- **Estensione VS Code** — `extensions/vscode-biagio/` (syntax, snippet, attributi peso)
+
+### Changed
+
+- **Accessibility (DOM order)** — by default the DOM follows reading order (`contentOrder: 'visual'`), so tab order and screen readers are correct (WCAG 2.4.3 / 1.3.2). Reordering by business value stays available with `contentOrder: 'priority'` (useful for streaming SSR). Business priority still drives **hydration and preload** in both modes.
+- **Hydrate emission** — `.biagio` `hydrate` scripts are emitted from their raw source, without a `Function.prototype.toString()` round-trip (robust across engines and minifiers). `new Function` remains only as a build-time syntax validator.
+
+### Security
+
+- **`<script>` break-out prevention** — `safeScript()` neutralizes `</script>` sequences in all inline-injected content (island hydrate, props JSON, plans): a hydrate containing `</script>` no longer breaks out of the tag.
+
+### Fixed
+
+- **`.biagio` parser** — rewritten as a quote-aware tokenizer instead of a chain of regexes: it handles `>` inside attributes, nested `<template>`, top-level HTML comments (a commented-out component is no longer compiled), and multiple concatenated `<style>` blocks.
 
 ---
 
 ## [0.10.1] — 2026-07-08
 
-### Corretto
+### Fixed
 
-- **SEO** — `og:locale` per locale (`en_US` / `it_IT`), `page.hideBreadcrumb` per evitare doppio breadcrumb in JSON-LD, fallback immagine su `TechArticle`
+- **SEO** — `og:locale` per locale (`en_US` / `it_IT`), `page.hideBreadcrumb` to avoid a duplicate breadcrumb in JSON-LD, image fallback on `TechArticle`
 
-### Documentazione
+### Documentation
 
-- Sito docs: `/llms.txt`, pagina AI agents, nav mobile a sezioni accordion, `og.png`, verifica Google Search Console
-- README npm: sezione «For AI agents»
+- Docs site: `/llms.txt`, AI agents page, mobile accordion nav, `og.png`, Google Search Console verification
+- npm README: «For AI agents» section
 
-### Modificato
+### Changed
 
-- Scaffold e `create-biagiojs` aggiornati a `^0.10.1`
+- Scaffold and `create-biagiojs` bumped to `^0.10.1`
 
 ---
 
 ## [0.10.0] — 2026-07-07
 
-### Aggiunto
+### Added
 
-- **`biagio doctor`** — validazione progetto pre-build (config, sharp, pagine, consent)
-- **`biagio analyze`** — report pesi HTML/JS post-build in `dist/.biagio-analyze.json`
-- **`biagio preview`** — server produzione via adapter Node (gzip/brotli)
-- **`site.deploy`** — preset Cloudflare / Vercel / Netlify generati alla build
-- **Adapter Cloudflare** — `biagiojs/adapters/cloudflare` per Pages Functions
-- **Compressione** gzip/brotli sull'adapter Node
-- **HMR granulare isole** — `/islands/` servite via Vite `transformRequest` in dev
-- **TypeScript** — `biagio.config.ts`, tipi in `biagiojs/types`
+- **`biagio doctor`** — pre-build project validation (config, sharp, pages, consent)
+- **`biagio analyze`** — post-build HTML/JS weight report in `dist/.biagio-analyze.json`
+- **`biagio preview`** — production server via the Node adapter (gzip/brotli)
+- **`site.deploy`** — Cloudflare / Vercel / Netlify presets generated at build
+- **Cloudflare adapter** — `biagiojs/adapters/cloudflare` for Pages Functions
+- **Compression** — gzip/brotli on the Node adapter
+- **Granular island HMR** — `/islands/` served via Vite `transformRequest` in dev
+- **TypeScript** — `biagio.config.ts`, types in `biagiojs/types`
 - **Documentation site** — `biagiojs/docs/` (bilingual EN/IT, native hreflang + `locales/*.json`), `npm run dev:docs`
-- Parser Markdown: blocchi codice e tabelle; `collectImageRefs` ignora `<pre>`
-- Benchmark: metrica conversion corretta (usa `data-cvw-id` in prod, non overlay)
+- Markdown parser: code fences and tables; `collectImageRefs` ignores `<pre>`
+- Benchmark: corrected conversion metric (uses `data-cvw-id` in prod, not the overlay)
 
-### Modificato
+### Changed
 
-- Scaffold e `create-biagiojs` aggiornati a `^0.10.0`
+- Scaffold and `create-biagiojs` bumped to `^0.10.0`
 
 ---
 
 ## [0.9.0] — 2026-07-07
 
-### Rinominato — primo publish npm come `biagiojs`
+### Renamed — first npm publish as `biagiojs`
 
-- Pacchetto npm **`cvw-first`** → **`biagiojs`** (deprecato su npm)
+- npm package **`cvw-first`** → **`biagiojs`** (deprecated on npm)
 - CLI **`cvw`** → **`biagio`**
 - Scaffolding **`create-cvw`** → **`create-biagiojs`**
 - Config **`cvw.config.js`** → **`biagio.config.js`**
-- Sintassi **`*.page.cvw`** → **`*.page.biagio`**
-- Repository GitHub → [`Dani2097/biagiojs`](https://github.com/Dani2097/biagiojs)
-- Monorepo: cartelle `biagiojs/`, `create-biagiojs/`
+- Syntax **`*.page.cvw`** → **`*.page.biagio`**
+- GitHub repository → [`Dani2097/biagiojs`](https://github.com/Dani2097/biagiojs)
+- Monorepo: `biagiojs/`, `create-biagiojs/` folders
 
-### Documentazione
+### Documentation
 
-- README, AI-GUIDE, CHANGELOG, DEPLOY-CACHE, IMAGE-OPTIMIZATION riscritti
-- README monorepo root con workflow publish
-- `create-biagiojs/README.md` nuovo
+- README, AI-GUIDE, CHANGELOG, DEPLOY-CACHE, IMAGE-OPTIMIZATION rewritten
+- Monorepo root README with publish workflow
+- New `create-biagiojs/README.md`
 
-Le API runtime interne (`__CVW_*`, `data-cvw-*`, `window.cvw`) restano invariate.
+Internal runtime APIs (`__CVW_*`, `data-cvw-*`, `window.cvw`) are unchanged.
 
 ---
 
 ## [0.8.3] — 2026-07-07
 
-### Aggiunto
+### Added
 
-- Wrapper `<div>` opzionale su nodi statici senza attributi
-- Minificatore CSS **lightningcss** (optionalDependency)
-- Test nodo statico senza wrapper
+- Optional `<div>` wrapper on static nodes without attributes
+- **lightningcss** CSS minifier (optionalDependency)
+- Test for a static node without a wrapper
 
-### Nota
+### Note
 
-Dopo purge CSS + minify reale + drop wrapper + Brotli CDN si raggiunge il pavimento pratico SSG.
+After CSS purge + real minify + wrapper drop + CDN Brotli, the practical SSG floor is reached.
 
 ---
 
 ## [0.8.2] — 2026-07-07
 
-### Aggiunto
+### Added
 
-- Runtime in blocchi `{}` isolati nell'IIFE (niente collisioni `const` post-minify)
-- Cache LRU per `minifyClientRuntime()` (max 256 entry)
-- Marker metrici (`data-cvw-conversion/seo/revenue`) solo con `overlay: true`
+- Runtime in isolated `{}` blocks inside the IIFE (no post-minify `const` collisions)
+- LRU cache for `minifyClientRuntime()` (max 256 entries)
+- Metric markers (`data-cvw-conversion/seo/revenue`) only with `overlay: true`
 
 ---
 
 ## [0.8.1] — 2026-07-06
 
-### Modificato
+### Changed
 
-- Allineamento versione `biagiojs` / `create-biagiojs`
-- `renderPage()` documentato come async
+- Version alignment between `biagiojs` / `create-biagiojs`
+- `renderPage()` documented as async
 
 ---
 
 ## [0.8.0] — 2026-07-06
 
-### Performance runtime
+### Runtime performance
 
-- `data-cvw-id` solo su nodi interattivi; `order:0` omesso
-- Piano compatto `{"e":["cta"],"l":["nav"]}`
-- Signals condizionale; IIFE unico minificato
-- Isole inline con `encodeURIComponent`
-- Benchmark demo: HTML **21.2 KB → 14.1 KB** (−33%)
+- `data-cvw-id` only on interactive nodes; `order:0` omitted
+- Compact plan `{"e":["cta"],"l":["nav"]}`
+- Conditional signals; single minified IIFE
+- Inline islands with `encodeURIComponent`
+- Demo benchmark: HTML **21.2 KB → 14.1 KB** (−33%)
 
 ### Pipeline DX
 
-- Profili immagine, `bySlug`, `qualityBySlug`, `--clean`, `--dryRun`
-- Font self-hosted, `site.cache`, `hooks.head`
-- Guide: [IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md), [DEPLOY-CACHE.md](./DEPLOY-CACHE.md)
+- Image profiles, `bySlug`, `qualityBySlug`, `--clean`, `--dryRun`
+- Self-hosted fonts, `site.cache`, `hooks.head`
+- Guides: [IMAGE-OPTIMIZATION.md](./IMAGE-OPTIMIZATION.md), [DEPLOY-CACHE.md](./DEPLOY-CACHE.md)
 
 ---
 
 ## [0.7.0] — Production hardening
 
 - PurgeCSS fix (`<template>`, `data-cvw-no-purge`)
-- Pipeline immagini sharp, validazione srcset
-- `.env` in build, immagini remote, font subset opt-in
+- sharp image pipeline, srcset validation
+- `.env` in build, remote images, opt-in font subset
 
 ---
 
-## [0.6.0] — Consent GDPR
+## [0.6.0] — GDPR consent
 
-- Banner native + vendor ottimizzato
-- Consent Mode v2, gating isole/script/iframe
+- Native banner + optimized vendor
+- Consent Mode v2, island/script/iframe gating
 
 ---
 
-[Non rilasciato]: https://github.com/Dani2097/biagiojs/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/Dani2097/biagiojs/compare/v0.9.0...HEAD
 [0.9.0]: https://github.com/Dani2097/biagiojs/releases/tag/v0.9.0
 [0.8.3]: https://github.com/Dani2097/biagiojs/releases/tag/v0.8.3
 [0.8.2]: https://github.com/Dani2097/biagiojs/releases/tag/v0.8.2

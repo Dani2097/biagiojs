@@ -44,6 +44,7 @@ npm run bench     # benchmark vs naive baseline
 - [Image optimization](./biagiojs/IMAGE-OPTIMIZATION.md)
 - [Deploy cache](./biagiojs/DEPLOY-CACHE.md)
 - [Changelog](./biagiojs/CHANGELOG.md)
+- [VS Code extension](./biagiojs/extensions/vscode-biagio/) — syntax + snippets for `.biagio`
 
 ---
 

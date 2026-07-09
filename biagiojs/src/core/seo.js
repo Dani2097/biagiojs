@@ -217,6 +217,7 @@ export function faviconTags(favicon) {
   if (favicon.svg) tags.push(`<link rel="icon" type="image/svg+xml" href="${esc(favicon.svg)}">`);
   if (favicon.ico) tags.push(`<link rel="icon" sizes="32x32" href="${esc(favicon.ico)}">`);
   if (favicon.apple) tags.push(`<link rel="apple-touch-icon" href="${esc(favicon.apple)}">`);
+  if (favicon.manifest) tags.push(`<link rel="manifest" href="${esc(favicon.manifest)}">`);
   if (favicon.themeColor) tags.push(`<meta name="theme-color" content="${esc(favicon.themeColor)}">`);
   return tags;
 }

@@ -74,6 +74,33 @@ Con `site.locales: ['en', 'it']` e `defaultLocale: 'en'`:
 
 **Questo sito docs** è bilingue: inglese su `/`, italiano su `/it/`.
 
+## Generatore favicon (opt-in)
+
+Punta `site.favicon` a un singolo sorgente e biagiojs costruisce il set essenziale moderno a build time — niente lista legacy da 20 file:
+
+```js
+// biagio.config.js
+site: {
+  favicon: {
+    source: 'images/logo.svg',   // SVG ideale, o PNG ≥512
+    generate: true,              // opt-in
+    themeColor: '#111',
+    // targets: ['ico', 'svg', 'apple', 'pwa'],  // escludi ciò che non ti serve
+  },
+}
+```
+
+Output scritti in `dist/`:
+
+| File | Scopo |
+|------|-------|
+| `favicon.ico` | 16/32/48, SERP + legacy (encoder ICO inline — sharp non genera `.ico`) |
+| `icon.svg` | Scalabile, browser moderni (solo da sorgente SVG) |
+| `apple-touch-icon.png` | 180×180, iOS |
+| `icon-192.png` + `icon-512.png` + `manifest.webmanifest` | Android / PWA (target `pwa`) |
+
+I tag `<link>`/`<meta>` (incluso `rel="manifest"` e `theme-color`) sono iniettati in automatico. I target raster (`ico`, `apple`, `pwa`) richiedono `sharp`; `biagio doctor` avvisa se manca o se il sorgente è troppo piccolo. La generazione è idempotente — salta quando gli output sono più recenti del sorgente.
+
 ## noindex
 
 `noindex: true` esclude la pagina da `sitemap.xml`.

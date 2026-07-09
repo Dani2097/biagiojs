@@ -84,6 +84,33 @@ With `site.locales: ['en', 'it']` and `defaultLocale: 'en'`:
 
 Use `smartImage()` with `aboveFold: true` and `hero` profile for LCP. The pipeline generates AVIF/WebP/JPEG with correct `srcset`.
 
+## Favicon generator (opt-in)
+
+Point `site.favicon` at a single source and biagiojs builds the modern essential set at build time — no legacy 20-file dump:
+
+```js
+// biagio.config.js
+site: {
+  favicon: {
+    source: 'images/logo.svg',   // SVG ideal, or PNG ≥512
+    generate: true,              // opt-in
+    themeColor: '#111',
+    // targets: ['ico', 'svg', 'apple', 'pwa'],  // opt out of what you don't need
+  },
+}
+```
+
+Outputs written to `dist/`:
+
+| File | Purpose |
+|------|---------|
+| `favicon.ico` | 16/32/48, SERP + legacy (inline ICO encoder — sharp can't emit `.ico`) |
+| `icon.svg` | Scalable, modern browsers (only from an SVG source) |
+| `apple-touch-icon.png` | 180×180, iOS |
+| `icon-192.png` + `icon-512.png` + `manifest.webmanifest` | Android / PWA (`pwa` target) |
+
+The `<link>`/`<meta>` tags (including `rel="manifest"` and `theme-color`) are injected automatically. Raster targets (`ico`, `apple`, `pwa`) require `sharp`; `biagio doctor` warns if it's missing or the source is too small. Generation is idempotent — it skips when outputs are newer than the source.
+
 ## noindex
 
 `noindex: true` excludes the page from `sitemap.xml`.

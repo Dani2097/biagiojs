@@ -4,6 +4,22 @@
  * annotated with technical costs AND business weights.
  */
 
+/**
+ * Pesi di business di default: quanto ciascun segnale contribuisce a `businessValue`.
+ * NON sono numeri magici sepolti nel codice — sono un knob unico, documentato e
+ * ricalibrabile (via config `site.weights` o dall'optimizer sui dati di campo).
+ * Sommano a 1 così `businessValue` resta in 0..1.
+ */
+export const BUSINESS_WEIGHTS = Object.freeze({ conversion: 0.6, seo: 0.25, interaction: 0.15 });
+
+/** Normalizza pesi parziali/arbitrari a somma 1 (fallback ai default se somma<=0). */
+export function normalizeBusinessWeights(w = {}) {
+  const m = { ...BUSINESS_WEIGHTS, ...w };
+  const sum = m.conversion + m.seo + m.interaction;
+  if (!(sum > 0)) return { ...BUSINESS_WEIGHTS };
+  return { conversion: m.conversion / sum, seo: m.seo / sum, interaction: m.interaction / sum };
+}
+
 export class PerfNode {
   constructor(id, {
     cpuCost = 1,            // relative CPU units to render/hydrate
@@ -19,22 +35,27 @@ export class PerfNode {
     clientProps,            // props serializzabili passate al modulo
     hydrateMode,            // override esplicito: 'inline'|'eager'|'visible'|'idle'|'never'
     consent,                // categoria GDPR: l'isola non si idrata senza consenso ('marketing'…)
+    hydrateSource,          // sorgente grezza dell'hydrate (compiler .biagio): emessa diretta, no toString()
+    weights,                // override pesi business per-nodo (default: BUSINESS_WEIGHTS)
   } = {}) {
     Object.assign(this, {
       id, cpuCost, memoryCost, networkCost, seoWeight, conversionWeight,
       interactionProbability, dependencies, render, hydrate, clientModule, clientProps, hydrateMode, consent,
+      hydrateSource, weights,
     });
   }
 
   /** True se il nodo ha JS client (inline o modulo). */
-  get interactive() { return Boolean(this.hydrate || this.clientModule); }
+  get interactive() { return Boolean(this.hydrate || this.hydrateSource || this.clientModule); }
 
   /** Business value of the node (used by scheduler & hydration). */
   get businessValue() {
-    // conversion dominates, SEO matters, interaction adds signal
-    return 0.6 * this.conversionWeight
-         + 0.25 * this.seoWeight
-         + 0.15 * this.interactionProbability;
+    // conversion dominates, SEO matters, interaction adds signal.
+    // Coefficienti in BUSINESS_WEIGHTS: default globale o override per-nodo/config.
+    const w = this.weights || BUSINESS_WEIGHTS;
+    return w.conversion * this.conversionWeight
+         + w.seo * this.seoWeight
+         + w.interaction * this.interactionProbability;
   }
 }
 

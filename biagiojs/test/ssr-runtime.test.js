@@ -23,13 +23,16 @@ test('compactPlan emette solo eager e lazy ids', () => {
   assert.doesNotMatch(json, /static/);
 });
 
-test('nodeWrapperAttrs: statici senza data-cvw-id, order:0 omesso', () => {
+test('nodeWrapperAttrs: default accessibile senza style:order; priority lo emette', () => {
   const n = new PerfNode('hero', { conversionWeight: 0.5, seoWeight: 0.5, render: () => '' });
-  n.domOrder = 0;
+  n.domOrder = 3;
+  // default (contentOrder visual): il DOM è già in ordine di lettura → nessun flex order
   assert.doesNotMatch(nodeWrapperAttrs(n, { interactive: false }), /data-cvw-id/);
   assert.doesNotMatch(nodeWrapperAttrs(n, { interactive: false }), /style=/);
-  n.domOrder = 3;
-  assert.match(nodeWrapperAttrs(n, { interactive: false }), /style="order:3"/);
+  // modalità priority: ripristina l'ordine visivo via flex order
+  assert.match(nodeWrapperAttrs(n, { interactive: false, emitVisualOrder: true }), /style="order:3"/);
+  n.domOrder = 0;
+  assert.doesNotMatch(nodeWrapperAttrs(n, { interactive: false, emitVisualOrder: true }), /style=/);
 });
 
 test('nodeWrapperAttrs: marker metrici conversion/seo solo con overlay', () => {

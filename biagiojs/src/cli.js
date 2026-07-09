@@ -18,7 +18,7 @@
  *     export default (ctx) => ({...})   // ctx.params, ctx.props disponibili
  */
 import { readdirSync, mkdirSync, writeFileSync, existsSync, readFileSync, watch, statSync, rmSync } from 'node:fs';
-import { join, resolve, relative, sep } from 'node:path';
+import { join, resolve, relative, sep, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createServer } from 'node:http';
 import { renderPage } from './ssr.js';
@@ -43,6 +43,14 @@ import { collectSubsetText, subsetFontFiles } from './core/font-subset.js';
 import { runDoctor, formatDoctorReport } from './core/doctor.js';
 import { analyzeDist, formatAnalyzeReport } from './core/analyze.js';
 import { generateDeployPreset, parseDeploy } from './core/deploy-presets.js';
+import { generateFavicons } from './core/favicon.js';
+import { preloadContentSchemas } from './core/content.js';
+import { BiagioError, formatErrorOverlay } from './core/errors.js';
+import { scaffoldPage, scaffoldIsland, scaffoldCollection } from './core/scaffold.js';
+import { explainPage, formatExplainReport } from './core/explain.js';
+import { pagesAffectedByChange, isFullRebuild, walkPageFiles } from './core/incremental.js';
+import { checkLinksAndAssets, formatLinkReport, checkPageSources } from './core/link-checker.js';
+import { getTemplate, configSnippet, extraFiles } from './templates/index.js';
 
 function walkPages(dir, base = dir) {
   const out = [];
@@ -60,6 +68,9 @@ export async function build(projectDir, {
   overlay: overlayDefault = false,
   clean = false,
   dryRun = false,
+  onlyPages = null,
+  skipGlobal = false,
+  builtPagesCache = null,
 } = {}) {
   const t0 = Date.now();
   const root = resolve(projectDir);
@@ -69,6 +80,7 @@ export async function build(projectDir, {
   const log = quiet ? () => {} : console.log;
 
   if (!overlayDefault) await loadEnv(root, 'production');
+  await preloadContentSchemas(root);
   const config = await loadConfig(root);
   const { site, images, fonts, optimize: optimizeOpts, hooks, cache } = config;
   const fontsDir = join(root, 'fonts');
@@ -80,6 +92,9 @@ export async function build(projectDir, {
     log('  clean: dist/img/ rimosso');
   }
 
+  let islandSources = {};
+
+  if (!skipGlobal) {
   // Pre-build: Google Fonts self-hosted
   if (hooks.beforeFonts) await hooks.beforeFonts({ root, fontsDir, fonts, config });
   if (fonts.google?.length) {
@@ -147,10 +162,25 @@ export async function build(projectDir, {
     log('  public/ → dist/');
   }
 
+  // Favicon generator opt-in: site.favicon = { source, generate: true, … }
+  // Gira DOPO public/ così i file generati hanno precedenza su eventuali manuali.
+  if (site.favicon?.generate) {
+    const fav = await generateFavicons({
+      source: join(root, site.favicon.source),
+      outDir: dist,
+      targets: site.favicon.targets,
+      themeColor: site.favicon.themeColor,
+      background: site.favicon.background,
+      name: site.favicon.name,
+      shortName: site.favicon.shortName,
+      strict: !overlayDefault,
+    });
+    for (const line of fav.log) log('  ' + line);
+  }
+
   // isole → dist/islands/ minificate (esbuild se presente) + sorgenti per l'inline
   let esbuild = null;
   try { esbuild = await import('esbuild'); } catch {}
-  const islandSources = {};
   const islandsDir = join(root, 'islands');
   if (existsSync(islandsDir)) {
     mkdirSync(join(dist, 'islands'), { recursive: true });
@@ -162,11 +192,30 @@ export async function build(projectDir, {
     }
     log('  islands:', readdirSync(islandsDir).join(', '), `→ dist/islands/${esbuild ? ' (minificate)' : ''}`);
   }
+  } // fine skipGlobal
+
+  if (skipGlobal) {
+    islandSources = {};
+    const idir = join(dist, 'islands');
+    if (existsSync(idir)) {
+      for (const f of readdirSync(idir).filter(x => x.endsWith('.js'))) {
+        islandSources['/islands/' + f] = readFileSync(join(idir, f), 'utf8');
+      }
+    }
+  }
 
   const reports = loadReports(join(root, 'reports'));
   const builtPages = [];
   const builtHtml = [];
-  const pageFiles = walkPages(pagesDir);
+  let pageFiles = walkPages(pagesDir);
+  if (onlyPages?.length) {
+    pageFiles = pageFiles.filter(f => onlyPages.includes(f));
+    if (!pageFiles.length) {
+      log('  incremental: nessuna pagina da rigenerare');
+      return { dist, builtPages: builtPagesCache || [] };
+    }
+    log(`  incremental: ${pageFiles.length} pagina/e`);
+  }
 
   // TypeScript nei template: se ci sono .page.ts, la build passa da Vite (transpile SSR)
   let viteServer = null;
@@ -262,12 +311,17 @@ export async function build(projectDir, {
     const { missing } = validateImageRefs(builtHtml, imgOutDir, images);
     if (missing.length) {
       const detail = missing.slice(0, 5).map(m => `  ${m.page}: ${m.ref}\n    → ${m.hint}`).join('\n');
-      throw new Error(`[biagio] ${missing.length} immagine/i referenziate ma assenti in dist/img/:\n${detail}${missing.length > 5 ? '\n  …' : ''}`);
+      throw new BiagioError(`${missing.length} immagine/i referenziate ma assenti in dist/img/:\n${detail}${missing.length > 5 ? '\n  …' : ''}`);
+    }
+    const linkIssues = checkLinksAndAssets(root, builtHtml, { dist });
+    if (linkIssues.length) {
+      const detail = linkIssues.slice(0, 5).map(i => `  ${i.page}: ${i.ref} → ${i.hint}`).join('\n');
+      throw new BiagioError(`${linkIssues.length} problema/i link/asset:\n${detail}${linkIssues.length > 5 ? '\n  …' : ''}`);
     }
   }
 
   // Subset font dopo il render: usa HTML output + sorgenti (opt-in)
-  if (fonts.subset && existsSync(fontsDir) && readdirSync(fontsDir).some(f => f.endsWith('.woff2'))) {
+  if (!skipGlobal && fonts.subset && existsSync(fontsDir) && readdirSync(fontsDir).some(f => f.endsWith('.woff2'))) {
     const text = collectSubsetText(root, builtHtml, fonts.subset);
     const sub = await subsetFontFiles(fontsDir, text, {
       minSaving: fonts.subset.minSaving,
@@ -285,29 +339,39 @@ export async function build(projectDir, {
     if (hooks.afterFonts) await hooks.afterFonts({ root, fontsDir, fonts: site.fonts, subset: sub, config });
   }
 
-  if (existsSync(fontsDir)) {
+  if (!skipGlobal && existsSync(fontsDir)) {
     cpSync(fontsDir, join(dist, 'fonts'), { recursive: true, force: true });
     log('  fonts/ → dist/fonts/');
   }
 
-  if (cache && cache !== false) {
+  if (!skipGlobal && cache && cache !== false) {
     const headersPath = join(dist, '_headers');
     const generated = generateHeaders(typeof cache === 'object' ? cache : {});
     writeFileSync(headersPath, generated);
     log('  cache: _headers generato in dist/');
   }
 
+  if (!skipGlobal) {
   const deployPlatform = parseDeploy(site);
   if (deployPlatform) {
     const created = generateDeployPreset(root, deployPlatform, { log });
     if (created.length) log(`  deploy: preset ${deployPlatform} → ${created.join(', ')}`);
   }
+  }
 
+  const allBuiltPages = mergeBuiltPages(builtPagesCache, builtPages);
   const sitemapFile = (site.sitemap || 'sitemap.xml').replace(/^\//, '');
-  writeFileSync(join(dist, sitemapFile), sitemap(site, builtPages));
+  writeFileSync(join(dist, sitemapFile), sitemap(site, allBuiltPages));
   writeFileSync(join(dist, 'robots.txt'), robots(site));
-  log(`\n✔ ${builtPages.length} page(s) + ${sitemapFile} + robots in ${Date.now() - t0}ms → ${dist}`);
-  return dist;
+  log(`\n✔ ${builtPages.length} page(s)${skipGlobal ? ' (incremental)' : ''} + ${sitemapFile} + robots in ${Date.now() - t0}ms → ${dist}`);
+  return { dist, builtPages: allBuiltPages };
+}
+
+function mergeBuiltPages(cache, fresh) {
+  if (!cache?.length) return fresh;
+  const map = new Map(cache.map(p => [p.path || p.basePath, p]));
+  for (const p of fresh) map.set(p.path || p.basePath, p);
+  return [...map.values()];
 }
 
 // ---------- dev server con watch + live reload (SSE) ----------
@@ -315,21 +379,25 @@ const RELOAD_SNIPPET = `<script>new EventSource('/__cvw').addEventListener('relo
 
 /** Error overlay del dev server integrato (stile Vite, zero dipendenze). */
 function errorPage(err) {
+  const { html: body } = formatErrorOverlay(err);
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const e = err instanceof BiagioError ? err : null;
   return `<!doctype html><html><head><meta charset="utf-8"><title>biagio — build error</title></head>
 <body style="margin:0;background:#14141f;color:#eee;font:14px/1.6 ui-monospace,monospace;padding:40px">
 <div style="max-width:880px;margin:0 auto">
 <div style="color:#ff6b6b;font-size:18px;font-weight:700;margin-bottom:8px">✖ Errore di build</div>
-<pre style="background:#1e1e2e;border:1px solid #3a3a52;border-radius:10px;padding:20px;white-space:pre-wrap;color:#ffb3b3">${esc(err.message)}</pre>
-${err.stack ? `<details style="margin-top:12px"><summary style="cursor:pointer;color:#8a8a96">stack trace</summary><pre style="color:#8a8a96;white-space:pre-wrap;font-size:12px">${esc(err.stack)}</pre></details>` : ''}
-<p style="color:#8a8a96">Correggi il file e salva: la pagina si ricarica da sola.</p>
+${body}
+${err.stack && !e?.file ? `<details style="margin-top:12px"><summary style="cursor:pointer;color:#8a8a96">stack trace</summary><pre style="color:#8a8a96;white-space:pre-wrap;font-size:12px">${esc(err.stack)}</pre></details>` : ''}
+<p style="color:#8a8a96;margin-top:16px">Correggi il file e salva: la pagina si ricarica da sola.</p>
 </div>${RELOAD_SNIPPET}</body></html>`;
 }
 
 export function serve(projectDir, dist, port = 4321) {
+  const root = resolve(projectDir);
   const types = { html: 'text/html', xml: 'application/xml', txt: 'text/plain', js: 'text/javascript', css: 'text/css', avif: 'image/avif', webp: 'image/webp', jpg: 'image/jpeg', png: 'image/png', svg: 'image/svg+xml' };
   const clients = new Set();
-  let lastError = null;   // errore dell'ultima rebuild → overlay
+  let lastError = null;
+  let builtPagesCache = [];
 
   createServer((req, res) => {
     if (lastError && !req.url.includes('.') && req.url !== '/__cvw') {
@@ -355,13 +423,24 @@ export function serve(projectDir, dist, port = 4321) {
 
   // watch: pages/, content/, images/, reports/, biagio.config.js
   let timer = null;
-  const rebuild = () => {
+  let firstBuild = true;
+  const rebuild = (changedPath) => {
     clearTimeout(timer);
     timer = setTimeout(async () => {
       try {
-        await build(projectDir, { quiet: true, overlay: true });
+        const affected = changedPath && !firstBuild ? pagesAffectedByChange(root, changedPath) : null;
+        const full = firstBuild || isFullRebuild(affected);
+        const result = await build(projectDir, {
+          quiet: true,
+          overlay: true,
+          onlyPages: full ? null : affected,
+          skipGlobal: !full && !!affected?.length,
+          builtPagesCache,
+        });
+        builtPagesCache = result.builtPages || [];
         lastError = null;
-        console.log('↻ rebuilt', new Date().toLocaleTimeString());
+        firstBuild = false;
+        console.log(full ? '↻ rebuilt' : `↻ incremental (${affected?.length || 0} pagine)`, new Date().toLocaleTimeString());
       } catch (e) {
         lastError = e;
         console.error('✖', e.message);
@@ -369,18 +448,24 @@ export function serve(projectDir, dist, port = 4321) {
       for (const c of clients) c.write('event: reload\ndata: 1\n\n');
     }, 120);
   };
-  for (const sub of ['pages', 'content', 'images', 'reports', '.']) {
+  rebuild(null);
+  for (const sub of ['pages', 'content', 'images', 'reports', 'islands', '.']) {
     const d = sub === '.' ? projectDir : join(projectDir, sub);
     if (existsSync(d) && statSync(d).isDirectory()) {
-      try { watch(d, { recursive: true }, (_, f) => { if (f && !f.includes('dist')) rebuild(); }); }
-      catch { watch(d, () => rebuild()); }
+      try {
+        watch(d, { recursive: true }, (_, f) => {
+          if (f && !f.includes('dist')) rebuild(join(d, f));
+        });
+      }
+      catch { watch(d, () => rebuild(d)); }
     }
   }
 }
 
 // ---------- scaffolding ----------
-export function create(dir) {
+export function create(dir, { template: templateName = 'default' } = {}) {
   const root = resolve(dir);
+  const tpl = getTemplate(templateName);
   const name = root.split(/[\\/]/).pop().toLowerCase().replace(/[^a-z0-9-]/g, '-');
   mkdirSync(join(root, 'pages'), { recursive: true });
   mkdirSync(join(root, 'content', 'blog'), { recursive: true });
@@ -389,6 +474,13 @@ export function create(dir) {
   mkdirSync(join(root, 'islands'), { recursive: true });
 
   mkdirSync(join(root, 'public'), { recursive: true });
+  // Logo di esempio (sorgente per il generatore di favicon). Sostituiscilo col tuo.
+  writeFileSync(join(root, 'images', 'logo.svg'),
+`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#111"/>
+  <circle cx="32" cy="32" r="14" fill="none" stroke="#fff" stroke-width="6"/>
+</svg>
+`);
   writeFileSync(join(root, 'package.json'), JSON.stringify({
     name, version: '0.1.0', private: true, type: 'module',
     scripts: {
@@ -403,25 +495,7 @@ export function create(dir) {
   }, null, 2) + '\n');
   writeFileSync(join(root, '.gitignore'), 'node_modules\ndist\n.env\n');
 
-  writeFileSync(join(root, 'biagio.config.js'),
-`export default {
-  site: {
-    name: 'Il Mio Sito',
-    baseUrl: 'https://example.com',
-    description: 'Creato con biagiojs',
-    images: { widths: [480, 960, 1440], quality: 75 },
-    // bySlug: { hero: [480, 960, 1440, 1920] },
-    // profiles: { hero: { widths: [480, 960, 1920], sizes: '100vw' } },
-    // Immagini remote (pre-build → images/ → pipeline sharp):
-    // remote: {
-    //   allowedDomains: ['supabase.co', 'cdn.example.com'],
-    //   sources: [
-    //     { url: 'https://xxx.supabase.co/storage/v1/object/public/bucket/hero.jpg', slug: 'hero' },
-    //   ],
-    // },
-  },
-};
-`);
+  writeFileSync(join(root, 'biagio.config.js'), configSnippet(tpl, name === 'default' ? 'Il Mio Sito' : name));
   writeFileSync(join(root, 'public', '_headers'),
 `# Cache biagiojs (Cloudflare Pages / Netlify)
 # Le regole si cumulano su Cloudflare: ! forza Cache-Control anche con /* generico.
@@ -436,6 +510,9 @@ export function create(dir) {
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 `);
+  const extras = extraFiles(tpl, name);
+  const skipDefaultIndex = ['landing', 'shop'].includes(tpl);
+  if (!skipDefaultIndex) {
   writeFileSync(join(root, 'pages', 'index.page.biagio'),
 `<page title="Home — ${name}" description="Benvenuto sul mio sito biagiojs." sitemapPriority="1.0" />
 
@@ -476,16 +553,25 @@ export function create(dir) {
   footer{text-align:center;color:#8a8a96;padding:48px 24px}
 </style>
 `);
+  }
+  if (!extras['content/blog/hello.md']) {
   writeFileSync(join(root, 'content', 'blog', 'hello.md'),
 `---
 title: Primo post
 date: 2026-07-06
+draft: false
 ---
 # Ciao
 
 Questo post viene da una **content collection**.
 `);
-  console.log(`✔ Sito creato in ${root}\n  cd ${dir} && npm install && npm run dev`);
+  }
+  for (const [rel, content] of Object.entries(extras)) {
+    const p = join(root, rel);
+    mkdirSync(dirname(p), { recursive: true });
+    writeFileSync(p, content);
+  }
+  console.log(`✔ Sito creato (${tpl}) in ${root}\n  cd ${dir} && npm install && npm run dev`);
 }
 
 // ---------- entry ----------
@@ -530,8 +616,34 @@ const [cmd, arg1, arg2] = positional;
 const buildOpts = { clean: flags.has('--clean'), dryRun: flags.has('--dryRun') || flags.has('--dry-run') };
 
 if (cmd === 'build') await build(arg1 || '.', buildOpts);
-else if (cmd === 'dev') { if (!await devVite(arg1 || '.')) serve(arg1 || '.', await build(arg1 || '.', { overlay: true, ...buildOpts })); }
-else if (cmd === 'create') { if (!arg1) throw new Error('Usage: biagio create <dir>'); create(arg1); }
+else if (cmd === 'dev') {
+  if (!await devVite(arg1 || '.')) serve(arg1 || '.', join(resolve(arg1 || '.'), 'dist'));
+}
+else if (cmd === 'create') {
+  if (!arg1) throw new Error('Usage: biagio create <dir> [--template blog|landing|docs|shop]');
+  const tplFlag = [...flags].find(f => f.startsWith('--template='));
+  const template = tplFlag ? tplFlag.split('=')[1] : (positional.find((_, i) => positional[i - 1] === '--template') || 'default');
+  create(arg1, { template });
+}
+else if (cmd === 'new') {
+  const sub = arg1;
+  const name = arg2;
+  if (!sub || !name) throw new Error('Usage: biagio new page <route> | island <name> | collection <name> [dir]');
+  const root = resolve(positional[3] || '.');
+  if (sub === 'page') console.log('✔', scaffoldPage(root, name));
+  else if (sub === 'island') console.log('✔', scaffoldIsland(root, name));
+  else if (sub === 'collection') {
+    const r = scaffoldCollection(root, name);
+    console.log('✔', r.sample, r.configPath ? `+ ${r.configPath}` : '');
+  } else throw new Error('Tipo sconosciuto: page | island | collection');
+}
+else if (cmd === 'explain') {
+  const pageArg = positional[1];
+  if (!pageArg) throw new Error('Usage: biagio explain <page> [dir]');
+  const root = resolve(positional[2] || '.');
+  const report = await explainPage(root, pageArg, { withReports: !flags.has('--no-reports') });
+  console.log(formatExplainReport(report));
+}
 else if (cmd === 'doctor') {
   const root = resolve(arg1 || '.');
   const report = await runDoctor(root);
@@ -556,4 +668,4 @@ else if (cmd === 'pull-vitals') {
   const out = await pullVitals(arg1, join(resolve(arg2 || '.'), 'reports'));
   console.log('✔ field data salvati in reports/crux.json:', JSON.stringify(out.p75));
 }
-else if (cmd) console.log('Usage: biagio build|dev|create|doctor|analyze|preview|pull-vitals [args] [--clean] [--dryRun] [--no-compress]');
+else if (cmd) console.log('Usage: biagio build|dev|create|new|explain|doctor|analyze|preview|pull-vitals [args] [--clean] [--dryRun] [--template name] [--no-compress]');

@@ -1,0 +1,46 @@
+{
+  "component": {
+    "prefix": "comp",
+    "body": [
+      "<component id=\"${1:id}\" conversion=\"${2:0.8}\" seo=\"${3:0.5}\" interaction=\"${4:0.3}\">",
+      "  <template>",
+      "    $0",
+      "  </template>",
+      "</component>"
+    ],
+    "description": "Componente biagio con pesi business"
+  },
+  "component-hydrate": {
+    "prefix": "comph",
+    "body": [
+      "<component id=\"${1:cta}\" conversion=\"1\" interaction=\"0.85\">",
+      "  <template>",
+      "    <button id=\"${2:btn}\">${3:Click}</button>",
+      "  </template>",
+      "  <script hydrate>",
+      "    el.querySelector('#${2:btn}').addEventListener('click', () => {",
+      "      $0",
+      "    });",
+      "  </script>",
+      "</component>"
+    ],
+    "description": "Componente con script hydrate inline"
+  },
+  "page": {
+    "prefix": "page",
+    "body": [
+      "<page title=\"${1:Title}\" description=\"${2:Description}\" sitemapPriority=\"${3:0.8}\" />",
+      "$0"
+    ],
+    "description": "Tag page biagio"
+  },
+  "island-client": {
+    "prefix": "island",
+    "body": [
+      "<component id=\"${1:id}\" client=\"/islands/${2:module}.js\" hydrate=\"inline\" conversion=\"${3:0.8}\">",
+      "  <template><div>$0</div></template>",
+      "</component>"
+    ],
+    "description": "Isola client esterna inline"
+  }
+}
