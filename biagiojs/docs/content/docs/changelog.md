@@ -3,10 +3,58 @@ title: Changelog
 description: biagiojs release history.
 order: 11
 priority: 0.5
-lastmod: 2026-07-09
+lastmod: 2026-07-15
 ---
 
 # Changelog
+
+## 0.10.9 — 2026-07-15
+
+### Added
+
+- **`site.optimize.bundleClasses`** — post-SSR dedup of repeated `class="..."` strings into short aliases
+- **Consent banner customization** — `text.bodyHtml` (raw HTML body), `css` (custom CSS over stable `cvw-consent-*` classes), `categoryLabels`
+- **Per-category preferences panel** — granular consent with "Save preferences"; opt out with `preferences: false`
+
+### Fixed
+
+- **Consent banner reappearing on every page** after a saved choice — the banner now re-checks the cookie itself
+
+### Changed
+
+- **Consent banner default look** — backdrop blur, slide-up entrance, button hover states, inset preferences card
+
+---
+
+## 0.10.8 — 2026-07-13
+
+### Fixed
+
+- **Vercel ISR runtime** — `biagio build` stages `api/_runtime/`; `createVercelHandler(import.meta.url)`; preset `includeFiles: api/_runtime/**`
+
+### Docs
+
+- Deploy & cache: Vercel staging and diagnostics
+
+---
+
+## 0.10.6 — 2026-07-13
+
+### Added
+
+- **ISR on Vercel** — `revalidate` pages skip `dist/` when `site.deploy` is set; adapter serves with CDN cache headers
+- **`cacheTags`** option on Vercel `createHandler` for on-demand purge
+- **`resolveRequestUrl`** exported from Vercel adapter
+
+### Changed
+
+- Vercel deploy preset: split rewrites, `trailingSlash`, `includeFiles`
+
+### Docs
+
+- Deploy & cache: Vercel ISR routing guide (EN/IT)
+
+---
 
 ## 0.10.5 — 2026-07-09
 

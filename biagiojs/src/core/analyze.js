@@ -1,6 +1,4 @@
-/**
- * biagiojs — report post-build (pesi HTML/JS per pagina).
- */
+import { parseBundleMarker } from './bundle-classes.js';
 import { existsSync, readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -50,18 +48,22 @@ export function analyzeDist(root) {
         lazy = (p.l || p.lazy || []).length;
       } catch { /* */ }
     }
+    const bundle = parseBundleMarker(html);
     return {
       path: path === '/' ? '/' : path.replace(/\/$/, '') + '/',
       htmlKb: +(Buffer.byteLength(html) / 1024).toFixed(1),
       scripts,
       islands,
       hydration: `${eager}+${lazy}`,
+      bundleAliases: bundle?.aliases ?? 0,
+      bundleSavedKb: bundle ? +(bundle.savedBytes / 1024).toFixed(2) : 0,
     };
   });
 
   const totals = {
     pages: pages.length,
     htmlKb: +pages.reduce((s, p) => s + p.htmlKb, 0).toFixed(1),
+    bundleSavedKb: +pages.reduce((s, p) => s + (p.bundleSavedKb || 0), 0).toFixed(2),
     imgKb: +(dirSize(join(dist, 'img')) / 1024).toFixed(1),
     islandsKb: +(dirSize(join(dist, 'islands')) / 1024).toFixed(1),
     fontsKb: +(dirSize(join(dist, 'fonts')) / 1024).toFixed(1),
@@ -78,12 +80,15 @@ export function formatAnalyzeReport({ pages, totals }) {
   const lines = [
     `# biagio analyze — ${totals.pages} pagine`,
     '',
-    '| Route | HTML (KB) | Isole DOM | Idratazione e+l |',
-    '|-------|-----------|-----------|-----------------|',
+    '| Route | HTML (KB) | Isole DOM | Idratazione e+l | Class bundle |',
+    '|-------|-----------|-----------|-----------------|--------------|',
   ];
   for (const p of pages.sort((a, b) => b.htmlKb - a.htmlKb)) {
-    lines.push(`| ${p.path} | ${p.htmlKb} | ${p.islands} | ${p.hydration} |`);
+    const bundle = p.bundleAliases
+      ? `${p.bundleAliases} alias (−${p.bundleSavedKb} KB raw)`
+      : '—';
+    lines.push(`| ${p.path} | ${p.htmlKb} | ${p.islands} | ${p.hydration} | ${bundle} |`);
   }
-  lines.push('', `**Totale HTML:** ${totals.htmlKb} KB · **img/** ${totals.imgKb} KB · **islands/** ${totals.islandsKb} KB · **fonts/** ${totals.fontsKb} KB`);
+  lines.push('', `**Totale HTML:** ${totals.htmlKb} KB · **class bundle (raw):** −${totals.bundleSavedKb} KB · **img/** ${totals.imgKb} KB · **islands/** ${totals.islandsKb} KB · **fonts/** ${totals.fontsKb} KB`);
   return lines.join('\n');
 }

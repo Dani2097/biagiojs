@@ -3,10 +3,58 @@ title: Changelog
 description: Storia delle release biagiojs.
 order: 11
 priority: 0.5
-lastmod: 2026-07-09
+lastmod: 2026-07-15
 ---
 
 # Changelog
+
+## 0.10.9 — 2026-07-15
+
+### Aggiunte
+
+- **`site.optimize.bundleClasses`** — dedup post-SSR delle stringhe `class="..."` ripetute in alias corti
+- **Personalizzazione banner consent** — `text.bodyHtml` (corpo in HTML raw), `css` (CSS custom sulle classi stabili `cvw-consent-*`), `categoryLabels`
+- **Pannello preferenze per categoria** — consenso granulare con "Salva preferenze"; disattivabile con `preferences: false`
+
+### Corretto
+
+- **Banner consent che riappariva a ogni pagina** dopo la scelta — ora il banner ricontrolla da solo il cookie
+
+### Modificato
+
+- **Grafica di default del banner consent** — sfondo con blur, entrata slide-up, stati hover dei bottoni, pannello preferenze in card
+
+---
+
+## 0.10.8 — 2026-07-13
+
+### Corretto
+
+- **Runtime ISR Vercel** — build crea `api/_runtime/`; `createVercelHandler`; preset `includeFiles: api/_runtime/**`
+
+### Docs
+
+- Deploy & cache: staging e diagnostica
+
+---
+
+## 0.10.6 — 2026-07-13
+
+### Aggiunte
+
+- **ISR su Vercel** — pagine `revalidate` non scritte in `dist/` con `site.deploy`; adapter con header cache CDN
+- Opzione **`cacheTags`** su `createHandler` Vercel per purge on-demand
+- **`resolveRequestUrl`** esportato dall'adapter Vercel
+
+### Modifiche
+
+- Preset deploy Vercel: rewrite separate, `trailingSlash`, `includeFiles`
+
+### Docs
+
+- Deploy & cache: guida routing ISR Vercel (EN/IT)
+
+---
 
 ## 0.10.5 — 2026-07-09
 

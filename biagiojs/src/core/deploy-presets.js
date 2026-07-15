@@ -32,9 +32,18 @@ export function generateDeployPreset(root, deploy, { log } = {}) {
     if (writeIfAbsent(root, 'vercel.json', JSON.stringify({
       buildCommand: 'npm run build',
       outputDirectory: 'dist',
-      rewrites: [{ source: '/(.*)', destination: '/api/ssr' }],
+      trailingSlash: true,
+      functions: {
+        'api/ssr.js': {
+          includeFiles: 'api/_runtime/**',
+        },
+      },
+      rewrites: [
+        { source: '/', destination: '/api/ssr?__path=' },
+        { source: '/:path((?!api/).+)', destination: '/api/ssr?__path=:path' },
+      ],
     }, null, 2) + '\n', log)) created.push('vercel.json');
-    if (writeIfAbsent(root, 'api/ssr.js', `import { createHandler } from 'biagiojs/adapters/vercel';\nexport default createHandler();\n`, log)) created.push('api/ssr.js');
+    if (writeIfAbsent(root, 'api/ssr.js', `import { createVercelHandler } from 'biagiojs/adapters/vercel';\n\nexport default createVercelHandler(import.meta.url);\n`, log)) created.push('api/ssr.js');
   }
 
   if (platform === 'cloudflare') {

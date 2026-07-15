@@ -68,6 +68,50 @@ For pages with `prerender = false` or `revalidate = N`:
 | Vercel | `biagiojs/adapters/vercel` |
 | Cloudflare | `biagiojs/adapters/cloudflare` |
 
+### Vercel ISR
+
+Set `site.deploy: 'vercel'` in `biagio.config.js`.
+
+**Build** (`biagio build`):
+
+1. Pages with `export const revalidate = N` are **not** written to `dist/` — Vercel serves them via `api/ssr` with CDN caching (`s-maxage`, stale-while-revalidate).
+2. Static pages stay in `dist/` and are served directly by the CDN.
+3. **`pages/`, `biagio.config.js`, and other runtime sources are copied to `api/_runtime/`** so the serverless function can load them (Vercel does not bundle dynamic `import()` paths from project root reliably).
+
+**`vercel.json`** (preset) — split rewrites so `/` reaches SSR, plus:
+
+```json
+{
+  "functions": {
+    "api/ssr.js": { "includeFiles": "api/_runtime/**" }
+  },
+  "trailingSlash": true,
+  "rewrites": [
+    { "source": "/", "destination": "/api/ssr?__path=" },
+    { "source": "/:path((?!api/).+)", "destination": "/api/ssr?__path=:path" }
+  ]
+}
+```
+
+**`api/ssr.js`:**
+
+```js
+import { createVercelHandler } from 'biagiojs/adapters/vercel';
+export default createVercelHandler(import.meta.url);
+```
+
+CDN purge via `cacheTags` (e.g. Shopify webhooks):
+
+```js
+export default createVercelHandler(import.meta.url, {
+  cacheTags: (url) => ['my-tag', url === '/' ? 'home' : 'page'],
+});
+```
+
+Debug on Vercel: `GET /api/ssr?__biagio_diag=1` returns JSON with `pagesExists` and `staged: true`.
+
+Vercel tries static files in `dist/` first; rewrites apply only when no matching file exists.
+
 ## Node version
 
 Requires **Node ≥ 18** for build and runtime.

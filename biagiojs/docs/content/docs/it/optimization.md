@@ -103,7 +103,37 @@ Dopo la build, ispeziona cosa è stato spedito:
 npx biagio analyze
 ```
 
-Scrive `dist/.biagio-analyze.json` — peso HTML per pagina, conteggio isole, totali asset. Abbinalo a Lighthouse su `biagio preview` per confronto lab vs campo.
+Scrive `dist/.biagio-analyze.json` — peso HTML per pagina, conteggio isole, totali asset. Con `site.optimize.bundleClasses` attivo, il report mostra anche alias **class bundle** e byte HTML raw risparmiati per route.
+
+## Class bundle (opt-in)
+
+Per markup molto utility-heavy (es. stringhe stile Tailwind ripetute):
+
+```js
+// biagio.config.js
+export default {
+  site: {
+    optimize: {
+      bundleClasses: true,
+      bundleMinRepeat: 3,   // default
+      bundleMinTokens: 2,   // default — salta attributi a classe singola
+    },
+  },
+};
+```
+
+In build biagiojs:
+
+1. Trova `class="flex items-center …"` identici che compaiono ≥ `bundleMinRepeat` volte
+2. Verifica che ogni token abbia una regola in un `<style>` della pagina (top-level nel file `.biagio`, o in `head` da `.page.js`)
+3. Li sostituisce con alias corti (`u-0`, `u-1`, …) e inietta CSS consolidato
+4. Esegue la **purge** dopo, così le utility inutilizzate spariscono dagli stili dei componenti
+
+Salta un elemento con `data-cvw-no-bundle`. Le classi dentro `<template>` non vengono mai bundle-ate (widget solo client).
+
+**Impatto:** soprattutto risparmio **HTML raw**; gzip/Brotli comprimono già bene le stringhe ripetute. Utile su landing con molte catene utility identiche. Vedi `demo/pages/bundle-demo.page.biagio`.
+
+Abbinalo a Lighthouse su `biagio preview` per confronto lab vs campo.
 
 ## Correlati
 

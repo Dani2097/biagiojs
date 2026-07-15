@@ -1,0 +1,27 @@
+{
+  "name": "shopify-biagiojs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Headless Shopify storefront starter built on biagiojs — near-zero-JS catalog, cart, login and private customer area.",
+  "scripts": {
+    "dev": "npx biagio dev .",
+    "build": "npx biagio build .",
+    "preview": "npx biagio preview .",
+    "preview:env": "node scripts/preview.mjs",
+    "explain": "npx biagio explain",
+    "doctor": "npx biagio doctor .",
+    "analyze": "npx biagio analyze ."
+  },
+  "dependencies": {
+    "@vercel/functions": "^3.4.3",
+    "biagiojs": "^0.10.8"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.0",
+    "vite": "^8.1.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

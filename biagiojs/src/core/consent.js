@@ -7,7 +7,10 @@
  *     mode: 'native',                       // banner del framework: 0 KB critical path
  *     categories: ['analytics','marketing'],// oltre a 'necessary' (sempre attiva)
  *     policyUrl: '/privacy/',
- *     text: { title, body, accept, reject, policy },   // testi personalizzabili
+ *     text: { title, body, bodyHtml, accept, reject, policy, preferences, save, necessary },
+ *     categoryLabels: { analytics: 'Statistiche', ... }, // label checkbox
+ *     preferences: true,                    // pannello granulare per categoria
+ *     css: '#cvw-consent-banner{...}',      // CSS custom (override delle classi)
  *   }
  *   // oppure vendor classico, ottimizzato:
  *   site.consent = {
@@ -87,30 +90,90 @@ export const CONSENT_RUNTIME = `
 })();
 `;
 
-/** Banner nativo: HTML server-rendered (primo paint, zero CLS: overlay fixed). */
-export function nativeBannerHtml({ categories = ['analytics', 'marketing'], policyUrl = '/privacy/', text = {} } = {}) {
+/**
+ * Banner nativo: HTML server-rendered (primo paint, zero CLS: overlay fixed).
+ *
+ * Personalizzazione:
+ *   text.bodyHtml — corpo in HTML RAW (non escapato: contenuto trusted del sito)
+ *   text.preferences / text.save — label del pannello preferenze
+ *   categoryLabels — { analytics: 'Statistiche', ... } per le checkbox
+ *   preferences: false — nasconde il pannello granulare per categoria
+ *   css — CSS custom appended dopo quello di default (le classi cvw-consent-*
+ *         sono stabili e sovrascrivibili; niente più stili inline)
+ */
+export function nativeBannerHtml({ categories = ['analytics', 'marketing'], policyUrl = '/privacy/', text = {}, categoryLabels = {}, preferences = true, css = '' } = {}) {
   const t = {
     title: 'Cookie e privacy',
     body: 'Usiamo cookie tecnici e, con il tuo consenso, cookie di analisi e marketing.',
     accept: 'Accetta tutto',
     reject: 'Solo necessari',
     policy: 'Informativa',
+    preferences: 'Personalizza',
+    save: 'Salva preferenze',
+    necessary: 'Necessari (sempre attivi)',
     ...text,
   };
-  return `<div id="cvw-consent-banner" role="dialog" aria-modal="false" aria-label="${esc(t.title)}"
-  style="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff;color:#14141f;border:1px solid #e5e5ea;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:18px 20px;max-width:680px;margin:0 auto;font:14px/1.5 system-ui,sans-serif">
+  const labels = { analytics: 'Analisi', marketing: 'Marketing', ...categoryLabels };
+  const bodyHtml = t.bodyHtml || esc(t.body);
+
+  const prefsPanel = preferences ? `
+  <div id="cvw-consent-prefs" class="cvw-consent-prefs" hidden>
+    <label class="cvw-consent-cat"><input type="checkbox" checked disabled> ${esc(t.necessary)}</label>
+    ${categories.map(c => `<label class="cvw-consent-cat"><input type="checkbox" data-cvw-cat="${esc(c)}"> ${esc(labels[c] || c)}</label>`).join('\n    ')}
+    <button id="cvw-consent-save" class="cvw-consent-btn cvw-consent-btn-save">${esc(t.save)}</button>
+  </div>` : '';
+
+  const prefsToggle = preferences
+    ? `<button id="cvw-consent-prefs-toggle" class="cvw-consent-btn cvw-consent-btn-ghost" aria-expanded="false" aria-controls="cvw-consent-prefs">${esc(t.preferences)}</button>`
+    : '';
+
+  return `<style>
+#cvw-consent-banner{position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#14141f;border:1px solid rgba(20,20,31,.08);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08),0 20px 60px rgba(0,0,0,.14);padding:20px 22px;max-width:680px;margin:0 auto;font:14px/1.55 system-ui,sans-serif;animation:cvw-consent-in .35s cubic-bezier(.22,1,.36,1)}
+@keyframes cvw-consent-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#cvw-consent-banner{animation:none}}
+#cvw-consent-banner>b{font-size:15px;letter-spacing:-.01em}
+#cvw-consent-banner .cvw-consent-body{margin:6px 0 14px;color:#55555f}
+#cvw-consent-banner .cvw-consent-body a{color:inherit;text-underline-offset:2px}
+#cvw-consent-banner .cvw-consent-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#cvw-consent-banner .cvw-consent-btn{flex:1;min-width:140px;padding:11px 18px;border:1px solid #d6d6dd;border-radius:999px;background:#fff;color:#14141f;font-weight:700;font-size:14px;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+#cvw-consent-banner .cvw-consent-btn:hover{background:#f4f4f7;border-color:#b9b9c4}
+#cvw-consent-banner .cvw-consent-btn:active{transform:scale(.98)}
+#cvw-consent-banner .cvw-consent-btn-accept{border:1px solid #14141f;background:#14141f;color:#fff}
+#cvw-consent-banner .cvw-consent-btn-accept:hover{background:#2b2b3a;border-color:#2b2b3a}
+#cvw-consent-banner .cvw-consent-btn-ghost{flex:0 1 auto;min-width:0;padding:11px 6px;border:none;background:transparent;text-decoration:underline;text-underline-offset:3px;font-weight:500;color:#55555f}
+#cvw-consent-banner .cvw-consent-btn-ghost:hover{background:transparent;color:#14141f}
+#cvw-consent-banner .cvw-consent-prefs{margin:2px 0 14px;padding:12px 14px;display:flex;flex-direction:column;gap:9px;background:rgba(20,20,31,.04);border-radius:12px}
+#cvw-consent-banner .cvw-consent-prefs[hidden]{display:none}
+#cvw-consent-banner .cvw-consent-cat{display:flex;align-items:center;gap:9px;cursor:pointer}
+#cvw-consent-banner .cvw-consent-cat input{width:16px;height:16px;accent-color:#14141f;cursor:pointer}
+#cvw-consent-banner .cvw-consent-btn-save{margin-top:3px;align-self:flex-start;flex:0 1 auto;padding:8px 16px;font-size:13px}
+${css}
+</style>
+<div id="cvw-consent-banner" role="dialog" aria-modal="false" aria-label="${esc(t.title)}">
   <b>${esc(t.title)}</b>
-  <p style="margin:6px 0 12px;color:#55555f">${esc(t.body)} <a href="${esc(policyUrl)}" style="color:inherit">${esc(t.policy)}</a></p>
-  <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <button id="cvw-consent-accept" style="flex:1;min-width:140px;padding:11px 18px;border:none;border-radius:999px;background:#14141f;color:#fff;font-weight:700;cursor:pointer">${esc(t.accept)}</button>
-    <button id="cvw-consent-reject" style="flex:1;min-width:140px;padding:11px 18px;border:1px solid #ccc;border-radius:999px;background:#fff;color:#14141f;font-weight:700;cursor:pointer">${esc(t.reject)}</button>
+  <p class="cvw-consent-body">${bodyHtml} <a href="${esc(policyUrl)}">${esc(t.policy)}</a></p>${prefsPanel}
+  <div class="cvw-consent-actions">
+    <button id="cvw-consent-accept" class="cvw-consent-btn cvw-consent-btn-accept">${esc(t.accept)}</button>
+    <button id="cvw-consent-reject" class="cvw-consent-btn">${esc(t.reject)}</button>
+    ${prefsToggle}
   </div>
 </div>
 <script>
 (function(){
+  // Scelta già salvata (il runtime gira PRIMA che questo HTML sia nel DOM,
+  // quindi la rimozione va rifatta qui): niente banner sulle pagine successive.
+  var b=document.getElementById('cvw-consent-banner');
+  if(window.cvwConsent&&window.cvwConsent.get()){if(b)b.remove();return}
   var a=document.getElementById('cvw-consent-accept'),r=document.getElementById('cvw-consent-reject');
   if(a)a.addEventListener('click',function(){window.cvwConsent.set(${JSON.stringify(categories)})});
   if(r)r.addEventListener('click',function(){window.cvwConsent.set([])});
+  var tg=document.getElementById('cvw-consent-prefs-toggle'),p=document.getElementById('cvw-consent-prefs');
+  if(tg&&p)tg.addEventListener('click',function(){p.hidden=!p.hidden;tg.setAttribute('aria-expanded',String(!p.hidden))});
+  var sv=document.getElementById('cvw-consent-save');
+  if(sv)sv.addEventListener('click',function(){
+    var cats=[].slice.call(document.querySelectorAll('#cvw-consent-prefs input[data-cvw-cat]:checked')).map(function(i){return i.dataset.cvwCat});
+    window.cvwConsent.set(cats);
+  });
 })();
 <\/script>`;
 }

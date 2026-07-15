@@ -6,7 +6,72 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning [Sem
 
 ---
 
-## [Unreleased]
+## [0.10.9] — 2026-07-15
+
+### Added
+
+- **`site.optimize.bundleClasses`** — post-SSR deduplication of repeated `class="..."` strings into short aliases when every token has a matching rule in page `<style>` blocks; savings reported in build log and `biagio analyze`
+- **Native consent banner customization** — `text.bodyHtml` (raw HTML body, trusted content), `css` (custom CSS appended after the default; inline styles moved to stable, overridable `cvw-consent-*` classes), `categoryLabels`
+- **Per-category preferences panel** — "Customize" toggle with one checkbox per category ("necessary" always on) and a "Save preferences" button for granular consent; disable with `preferences: false`
+- Dev server reads `PORT` env var as fallback for the default port
+
+### Changed
+
+- **Consent banner default look** — frosted glass background (backdrop blur), slide-up entrance (respects `prefers-reduced-motion`), hover/active states on buttons, preferences panel in a soft inset card
+- Scaffold dependency bumped to `^0.10.9`
+
+### Fixed
+
+- **Native consent banner reappearing on every page** — the consent runtime runs before the banner HTML is in the DOM, so its removal was a no-op; the banner's own inline script now re-checks the saved cookie and removes itself
+
+---
+
+## [0.10.8] — 2026-07-13
+
+### Fixed
+
+- **Vercel ISR runtime bundle** — `biagio build` with `site.deploy: 'vercel'` now stages `pages/`, config and optional `lib/`, `islands/`, `theme.js` into `api/_runtime/`; preset uses `includeFiles: "api/_runtime/**"` (root `includeFiles` globs are unreliable for dynamic imports on lambdas)
+- **`createVercelHandler(import.meta.url)`** — reads from staged `api/_runtime/`; `?__biagio_diag=1` for production debugging
+
+### Changed
+
+- Scaffold and `create-biagiojs` bumped to `^0.10.8`
+
+### Docs
+
+- Deploy & cache: Vercel staging, `createVercelHandler`, diagnostic endpoint
+
+---
+
+## [0.10.7] — 2026-07-13
+
+### Fixed
+
+- **Vercel adapter `projectDir`** — export `projectDirFromApi(import.meta.url)`; `process.cwd()` on Vercel lambdas is not the site root, so `pages/` was missing at runtime (ISR/SSR returned 404)
+- **Vercel preset `includeFiles`** — comma-separated string (Vercel schema requires string, not array)
+
+### Changed
+
+- Scaffold and `create-biagiojs` bumped to `^0.10.7`
+
+---
+
+## [0.10.6] — 2026-07-13
+
+### Added
+
+- **ISR on adapter deploy** — pages with `export const revalidate` are no longer written to `dist/` when `site.deploy` is set; stale HTML from prior builds is removed; HTML is served by the platform adapter with `s-maxage` / stale-while-revalidate
+- **`createHandler` `cacheTags` option** (Vercel adapter) — optional `(url, meta) => string[]` callback; sets `Cache-Tag` for CDN purge integrations
+- **`resolveRequestUrl`** exported from `biagiojs/adapters/vercel` — reliable path resolution from Vercel rewrites (`__path`), `x-biagio-path` header, or direct pathname
+
+### Changed
+
+- **Vercel deploy preset** — `vercel.json` now includes split rewrites for `/` vs other paths, `trailingSlash: true`, and `functions.includeFiles` for SSR runtime
+- Scaffold and `create-biagiojs` bumped to `^0.10.6`
+
+### Docs
+
+- **Deploy & cache** (EN/IT): Vercel ISR routing, preset fields, `cacheTags` example
 
 ---
 

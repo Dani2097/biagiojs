@@ -43,6 +43,7 @@ import { collectSubsetText, subsetFontFiles } from './core/font-subset.js';
 import { runDoctor, formatDoctorReport } from './core/doctor.js';
 import { analyzeDist, formatAnalyzeReport } from './core/analyze.js';
 import { generateDeployPreset, parseDeploy } from './core/deploy-presets.js';
+import { stageVercelRuntime } from './core/stage-vercel-runtime.js';
 import { generateFavicons } from './core/favicon.js';
 import { preloadContentSchemas } from './core/content.js';
 import { BiagioError, formatErrorOverlay } from './core/errors.js';
@@ -228,6 +229,8 @@ export async function build(projectDir, {
     }
   }
 
+  const deployPlatform = parseDeploy(site);
+
   for (const file of pageFiles) {
     let mod;
     try {
@@ -289,14 +292,30 @@ export async function build(projectDir, {
       let html = await renderPage(graph, { title: page.title, head: pageHead, overlay, site, page, assets, experiments, thresholds, islandSources });
       // ottimizzazione output: purge CSS + minify (solo build prod, non in dev)
       let saved = 0;
-      if (!overlayDefault) ({ html, saved } = await optimizeHtml(html, optimizeOpts));
+      let bundleSaved = 0;
+      if (!overlayDefault) {
+        const opt = await optimizeHtml(html, optimizeOpts);
+        html = opt.html;
+        saved = opt.saved;
+        bundleSaved = opt.bundle?.savedBytes || 0;
+      }
       const outDir = route === 'index' ? dist : join(dist, route);
-      mkdirSync(outDir, { recursive: true });
-      writeFileSync(join(outDir, 'index.html'), html);
+      const htmlPath = join(outDir, 'index.html');
+      const isrOnDemand = typeof mod.revalidate === 'number' && deployPlatform;
+      if (isrOnDemand) {
+        if (existsSync(htmlPath)) rmSync(htmlPath, { force: true });
+      } else {
+        mkdirSync(outDir, { recursive: true });
+        writeFileSync(htmlPath, html);
+      }
       builtPages.push(page);
       builtHtml.push([page.path, html]);
 
-      log(`\n▸ ${page.path}${saved > 0 ? ` (−${(saved / 1024).toFixed(1)} KB: purge+minify)` : ''}`);
+      const optNote = [
+        saved > 0 ? `−${(saved / 1024).toFixed(1)} KB: purge+minify` : '',
+        bundleSaved > 0 ? `−${(bundleSaved / 1024).toFixed(1)} KB: class bundle` : '',
+      ].filter(Boolean).join(', ');
+      log(`\n▸ ${page.path}${optNote ? ` (${optNote})` : ''}${isrOnDemand ? ' [ISR → adapter]' : ''}`);
       log('  render order:', renderOrder(graph).map(n => n.id).join(' → '));
       const plan = hydrationPlan(graph, thresholds);
       log('  hydration:', ['eager', 'lazy', 'static'].map(k => `${k}=[${plan[k].map(x => x.node.id)}]`).join(' '));
@@ -356,10 +375,10 @@ export async function build(projectDir, {
   }
 
   if (!skipGlobal) {
-  const deployPlatform = parseDeploy(site);
   if (deployPlatform) {
     const created = generateDeployPreset(root, deployPlatform, { log });
     if (created.length) log(`  deploy: preset ${deployPlatform} → ${created.join(', ')}`);
+    if (deployPlatform === 'vercel') stageVercelRuntime(root, { log });
   }
   }
 
@@ -396,7 +415,7 @@ ${err.stack && !e?.file ? `<details style="margin-top:12px"><summary style="curs
 </div>${RELOAD_SNIPPET}</body></html>`;
 }
 
-export function serve(projectDir, dist, port = 4321) {
+export function serve(projectDir, dist, port = +(process.env.PORT || 4321)) {
   const root = resolve(projectDir);
   const types = { html: 'text/html', xml: 'application/xml', txt: 'text/plain', js: 'text/javascript', css: 'text/css', avif: 'image/avif', webp: 'image/webp', jpg: 'image/jpeg', png: 'image/png', svg: 'image/svg+xml' };
   const clients = new Set();
@@ -494,7 +513,7 @@ export function create(dir, { template: templateName = 'default' } = {}) {
       doctor: 'biagio doctor .',
       analyze: 'biagio analyze .',
     },
-    dependencies: { 'biagiojs': '^0.10.5' },
+    dependencies: { 'biagiojs': '^0.10.9' },
     devDependencies: { vite: '^6.0.0', sharp: '^0.33.0' },
   }, null, 2) + '\n');
   writeFileSync(join(root, '.gitignore'), 'node_modules\ndist\n.env\n');

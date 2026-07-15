@@ -1,6 +1,6 @@
 {
   "name": "biagiojs",
-  "version": "0.10.5",
+  "version": "0.10.9",
   "description": "Business-first web framework: Core Web Vitals as constraints, conversion/SEO/engagement as first-class citizens. SSR + adaptive islands + file-based routing.",
   "type": "module",
   "types": "./types/index.d.ts",

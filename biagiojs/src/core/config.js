@@ -62,6 +62,9 @@ export async function loadConfig(root) {
     purge: site.optimize?.purge !== false,
     minify: site.optimize?.minify !== false,
     scripts: site.optimize?.scripts !== false,
+    bundleClasses: site.optimize?.bundleClasses === true,
+    bundleMinRepeat: site.optimize?.bundleMinRepeat ?? 3,
+    bundleMinTokens: site.optimize?.bundleMinTokens ?? 2,
   };
   const subset = parseSubsetConfig(site.fonts?.subset);
   const injectMode = parseFontInjectConfig(site.fonts);

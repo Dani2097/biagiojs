@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "shopify-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--prefix", "shopify-biagiojs"],
+      "port": 3000
+    },
+    {
+      "name": "biagiojs-demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "biagiojs"],
+      "port": 4321,
+      "autoPort": true
+    }
+  ]
+}

@@ -3,7 +3,7 @@ title: Consent & cookie
 description: Banner nativo GDPR, vendor Cookiebot/Iubenda, Consent Mode v2 e gating delle isole.
 order: 10
 priority: 0.85
-lastmod: 2026-07-07
+lastmod: 2026-07-15
 ---
 
 # Consent & cookie
@@ -26,7 +26,17 @@ site: {
       accept: 'Accetta tutto',
       reject: 'Solo necessari',
       policy: 'Informativa privacy',
+      // corpo in HTML raw (trusted): vince su `body`
+      bodyHtml: 'Usiamo cookie tecnici e, <b>con il tuo consenso</b>, cookie di analisi.',
+      preferences: 'Personalizza',
+      save: 'Salva preferenze',
+      necessary: 'Necessari (sempre attivi)',
     },
+    categoryLabels: { analytics: 'Statistiche', marketing: 'Marketing' },
+    preferences: true,   // pannello granulare per categoria (default: true)
+    // CSS custom, appended dopo quello di default: le classi cvw-consent-*
+    // sono stabili e sovrascrivibili
+    css: '#cvw-consent-banner{background:#111;color:#fff;border-radius:8px}',
   },
 }
 ```

@@ -1,0 +1,17 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "trailingSlash": true,
+  "functions": {
+    "api/ssr.js": {
+      "includeFiles": "api/_runtime/**"
+    },
+    "api/revalidate.js": {
+      "includeFiles": "lib/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/api/ssr?__path=" },
+    { "source": "/:path((?!api/).+)", "destination": "/api/ssr?__path=:path" }
+  ]
+}

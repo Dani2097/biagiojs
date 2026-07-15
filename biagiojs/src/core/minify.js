@@ -1,16 +1,18 @@
 /**
  * biagiojs — ottimizzazione output a build time (zero dipendenze).
  *
- * 1. purgeCss(css, html)  — elimina le regole i cui selettori non matchano
+ * 1. bundleClassAttributes — alias corti per class="..." ripetute (opt-in)
+ * 2. purgeCss(css, html)  — elimina le regole i cui selettori non matchano
  *    l'HTML renderizzato. biagiojs renderizza tutto server-side, quindi
  *    l'HTML finale è la fonte di verità per il DOM visibile (a differenza dei
  *    purger generici che devono indovinare le classi generate dal JS).
  *    I <style> dentro <template> e quelli con data-cvw-no-purge non vengono purgati
  *    (CSS per widget JS client-side). Conservativo: in dubbio, la regola resta.
- * 2. minifyCss(css)       — commenti e whitespace via.
- * 3. minifyHtml(html)     — whitespace tra i tag (salta pre/textarea/script/style).
- * 4. minifyInlineScripts  — esbuild (arriva con vite) sui <script> inline; no-op senza.
+ * 3. minifyCss(css)       — commenti e whitespace via.
+ * 4. minifyHtml(html)     — whitespace tra i tag (salta pre/textarea/script/style).
+ * 5. minifyInlineScripts  — esbuild (arriva con vite) sui <script> inline; no-op senza.
  */
+import { bundleClassAttributes } from './bundle-classes.js';
 
 // ---------- CSS ----------
 export function minifyCss(css) {
@@ -136,9 +138,24 @@ export async function minifyInlineScripts(html) {
   return { html, minified: true };
 }
 
-/** Pipeline completa su una pagina renderizzata. Ritorna { html, saved } (byte risparmiati). */
-export async function optimizeHtml(html, { purge = true, minify = true, scripts = true } = {}) {
+/** Pipeline completa su una pagina renderizzata. Ritorna { html, saved, bundle? }. */
+export async function optimizeHtml(html, {
+  purge = true,
+  minify = true,
+  scripts = true,
+  bundleClasses = false,
+  bundleMinRepeat = 3,
+  bundleMinTokens = 2,
+} = {}) {
   const before = Buffer.byteLength(html);
+  let bundle = { savedBytes: 0, aliases: 0 };
+
+  if (bundleClasses) {
+    const r = bundleClassAttributes(html, { minRepeat: bundleMinRepeat, minTokens: bundleMinTokens });
+    html = r.html;
+    bundle = { savedBytes: r.savedBytes, aliases: r.aliases };
+  }
+
   const cssMin = minify ? await loadCssMinifier() : (c => c);
   if (purge || minify) {
     // Proteggi <template>: i <style> al loro interno servono a widget JS (classi non nel DOM visibile)
@@ -161,5 +178,6 @@ export async function optimizeHtml(html, { purge = true, minify = true, scripts 
   }
   if (minify) html = minifyHtml(html);
   if (scripts) ({ html } = await minifyInlineScripts(html));
-  return { html, saved: before - Buffer.byteLength(html) };
+  const saved = before - Buffer.byteLength(html);
+  return bundle.aliases ? { html, saved, bundle } : { html, saved };
 }

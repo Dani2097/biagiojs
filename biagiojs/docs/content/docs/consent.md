@@ -3,7 +3,7 @@ title: Consent & cookies
 description: GDPR-native banner, Cookiebot/Iubenda vendors, Consent Mode v2 and island gating.
 order: 10
 priority: 0.85
-lastmod: 2026-07-07
+lastmod: 2026-07-15
 ---
 
 # Consent & cookies
@@ -26,7 +26,17 @@ site: {
       accept: 'Accept all',
       reject: 'Essential only',
       policy: 'Privacy policy',
+      // raw HTML body (trusted): wins over `body`
+      bodyHtml: 'We use essential cookies and, <b>with your consent</b>, analytics.',
+      preferences: 'Customize',
+      save: 'Save preferences',
+      necessary: 'Essential (always on)',
     },
+    categoryLabels: { analytics: 'Statistics', marketing: 'Marketing' },
+    preferences: true,   // per-category granular panel (default: true)
+    // custom CSS, appended after the default one: the cvw-consent-* classes
+    // are stable and overridable
+    css: '#cvw-consent-banner{background:#111;color:#fff;border-radius:8px}',
   },
 }
 ```

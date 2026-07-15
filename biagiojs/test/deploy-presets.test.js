@@ -19,6 +19,18 @@ test('generateDeployPreset: cloudflare crea wrangler e function', () => {
   assert.match(readFileSync(join(dir, 'functions', '[[path]].js'), 'utf8'), /biagiojs\/adapters\/cloudflare/);
 });
 
+test('generateDeployPreset: vercel crea vercel.json e api/ssr', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'biagio-deploy-'));
+  const created = generateDeployPreset(dir, 'vercel');
+  assert.ok(created.includes('vercel.json'));
+  assert.ok(created.includes('api/ssr.js'));
+  const vercel = JSON.parse(readFileSync(join(dir, 'vercel.json'), 'utf8'));
+  assert.equal(vercel.trailingSlash, true);
+  assert.equal(vercel.rewrites[0].destination, '/api/ssr?__path=');
+  assert.equal(vercel.functions['api/ssr.js'].includeFiles, 'api/_runtime/**');
+  assert.match(readFileSync(join(dir, 'api', 'ssr.js'), 'utf8'), /biagiojs\/adapters\/vercel/);
+});
+
 test('generateDeployPreset: non sovrascrive file esistenti', () => {
   const dir = mkdtempSync(join(tmpdir(), 'biagio-deploy-'));
   writeFileSync(join(dir, 'vercel.json'), '{}');

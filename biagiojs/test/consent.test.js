@@ -19,6 +19,24 @@ test('native: banner SSR con rifiuto pari livello e policy link', () => {
   assert.doesNotMatch(evil, /<script>x<\/script>/);
 });
 
+test('native: bodyHtml raw, css custom, pannello preferenze e ri-check cookie', () => {
+  const html = nativeBannerHtml({
+    text: { bodyHtml: 'Ciao <b>mondo</b>' },
+    css: '#cvw-consent-banner{background:red}',
+    categoryLabels: { analytics: 'Statistiche' },
+  });
+  assert.match(html, /Ciao <b>mondo<\/b>/);                     // HTML raw iniettato
+  assert.match(html, /#cvw-consent-banner\{background:red\}/);  // css custom nel <style>
+  assert.match(html, /cvw-consent-prefs/);                      // pannello granulare
+  assert.match(html, /Statistiche/);                            // label custom
+  assert.match(html, /data-cvw-cat="analytics"/);
+  // fix persistenza: lo script del banner si auto-rimuove se il cookie esiste già
+  assert.match(html, /window\.cvwConsent&&window\.cvwConsent\.get\(\)/);
+  // preferences:false toglie il pannello
+  const noPrefs = nativeBannerHtml({ preferences: false });
+  assert.doesNotMatch(noPrefs, /id="cvw-consent-prefs"/);
+});
+
 test('vendor: preconnect + strategy + manual blocking (cookiebot)', () => {
   assert.match(vendorPreconnect('cookiebot'), /preconnect.*cookiebot/);
   const idle = vendorLoaderScript({ vendor: 'cookiebot', id: 'x', strategy: 'idle' });

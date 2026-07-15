@@ -1,0 +1,12 @@
+node_modules/
+dist/
+api/_runtime/
+.env
+.env.local
+.DS_Store
+*.log
+.vercel/
+.wrangler/
+
+.vercel
+.env*
